@@ -62,7 +62,7 @@
                         android:id="@+id/home_sign_up_button"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:text="@string/sign_up_button"
+                        android:text="@string/sign_up"
                         android:theme="@style/AppTheme.HomeButton"
                         android:background="?android:attr/selectableItemBackground" />
 
@@ -79,7 +79,7 @@
                         android:id="@+id/home_login_button"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:text="@string/login_button"
+                        android:text="@string/sign_in"
                         android:theme="@style/AppTheme.HomeButton"
                         android:background="?android:attr/selectableItemBackground"/>
 

@@ -25,11 +25,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".Home.SignUpActivity"
-            android:label="@string/title_activity_sign_up"
-            android:windowSoftInputMode="adjustPan">
-        </activity>
     </application>
 
 </manifest>

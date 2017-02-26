@@ -1,9 +1,9 @@
 package com.valchev.plamen.fishbook.Home;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.view.MotionEvent;
 import android.view.View;
@@ -24,7 +24,7 @@ public class HomeActivity extends FragmentActivity {
     protected boolean mStopSliding = false;
     protected Runnable mAnimateViewPager;
     protected Handler mHandler;
-    protected Button mLoginButton;
+    protected Button mSignInButton;
     protected Button mSignUpButton;
 
     @Override
@@ -37,7 +37,7 @@ public class HomeActivity extends FragmentActivity {
 
         mViewPager = (ViewPager) findViewById(R.id.home_viewpager);
         mViewPagerIndicator	= (CirclePageIndicator) findViewById(R.id.home_viewpager_indicator);
-        mLoginButton = (Button) findViewById(R.id.home_login_button);
+        mSignInButton = (Button) findViewById(R.id.home_login_button);
         mSignUpButton = (Button) findViewById(R.id.home_sign_up_button);
 
         mSignUpButton.setOnClickListener(new View.OnClickListener() {
@@ -45,12 +45,24 @@ public class HomeActivity extends FragmentActivity {
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent( HomeActivity.this, SignUpActivity.class );
+                AuthenticateUserDialogFragment authenticateUserDialog = new AuthenticateUserDialogFragment();
+                FragmentManager fragmentManager = getSupportFragmentManager();
 
-//                startActivity( intent );
+                authenticateUserDialog.setTitle(R.string.sign_up);
+                authenticateUserDialog.show(fragmentManager, "authenticate_dialog_fragment");
+            }
+        });
 
+        mSignInButton.setOnClickListener(new View.OnClickListener() {
 
+            @Override
+            public void onClick(View v) {
 
+                AuthenticateUserDialogFragment authenticateUserDialog = new AuthenticateUserDialogFragment();
+                FragmentManager fragmentManager = getSupportFragmentManager();
+
+                authenticateUserDialog.setTitle(R.string.sign_in);
+                authenticateUserDialog.show(fragmentManager, "authenticate_dialog_fragment");
             }
         });
 
