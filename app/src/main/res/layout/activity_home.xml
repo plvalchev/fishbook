@@ -1,17 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_home"
+    tools:context="com.valchev.plamen.fishbook.Home.HomeActivity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.valchev.plamen.fishbook.HomeActivity">
+    android:background="@drawable/home_background_bitmap">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!" />
-</RelativeLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/home_background_gradient_top" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:background="@drawable/home_background_gradient_bottom">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="96dp"
+                android:gravity="center|top"
+                android:paddingTop="24dp"
+                android:src="@drawable/logo"/>
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/home_viewpager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_margin="24dp"
+                android:gravity="center"
+                android:overScrollMode="never"/>
+
+            <com.viewpagerindicator.CirclePageIndicator
+                android:id="@+id/home_viewpager_indicator"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:gravity="center|bottom"
+                android:background="@android:color/transparent"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:layout_weight="2.2"
+                android:layout_margin="16dp"
+                android:background="@android:color/transparent"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.5"
+                    android:layout_margin="8dp"
+                    android:background="@drawable/home_button_default">
+
+                    <Button
+                        android:id="@+id/home_sign_up_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="@string/sign_up_button"
+                        android:theme="@style/AppTheme.HomeButton"
+                        android:background="?android:attr/selectableItemBackground" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.5"
+                    android:layout_margin="8dp"
+                    android:background="@drawable/home_button_default">
+
+                    <Button
+                        android:id="@+id/home_login_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="@string/login_button"
+                        android:theme="@style/AppTheme.HomeButton"
+                        android:background="?android:attr/selectableItemBackground"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</LinearLayout>

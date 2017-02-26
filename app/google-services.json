@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "748224651001",
-    "firebase_url": "https://fishbook-f40d6.firebaseio.com",
-    "project_id": "fishbook-f40d6",
-    "storage_bucket": "fishbook-f40d6.appspot.com"
+    "project_number": "92386110933",
+    "firebase_url": "https://fishbook-c1695.firebaseio.com",
+    "project_id": "fishbook-c1695",
+    "storage_bucket": "fishbook-c1695.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:748224651001:android:3735b8abff8d9351",
+        "mobilesdk_app_id": "1:92386110933:android:3735b8abff8d9351",
         "android_client_info": {
           "package_name": "com.valchev.plamen.fishbook"
         }
       },
       "oauth_client": [
         {
-          "client_id": "748224651001-tonvj8mooonct2kmksuvloe9veprvv2b.apps.googleusercontent.com",
+          "client_id": "92386110933-38gepvoc87t7jome7md3ssl6ptflqibi.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.valchev.plamen.fishbook",
@@ -23,11 +23,15 @@
           }
         },
         {
-          "client_id": "748224651001-8pdd0ss9j5qbomrfo86mqq5n7abf31vq.apps.googleusercontent.com",
+          "client_id": "92386110933-ns6p0qmo97912gb8pol1bmtf728c4ai1.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
-      "api_key": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKX5XPEnzTC2WKpT45D9_aqS9zttwnBv8"
+        }
+      ],
       "services": {
         "analytics_service": {
           "status": 1
@@ -36,7 +40,7 @@
           "status": 2,
           "other_platform_oauth_client": [
             {
-              "client_id": "748224651001-8pdd0ss9j5qbomrfo86mqq5n7abf31vq.apps.googleusercontent.com",
+              "client_id": "92386110933-ns6p0qmo97912gb8pol1bmtf728c4ai1.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
