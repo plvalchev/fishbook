@@ -1,4 +1,4 @@
-package com.valchev.plamen.fishbook.Home;
+package com.valchev.plamen.fishbook.home;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;

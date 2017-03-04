@@ -1,19 +1,115 @@
-package com.valchev.plamen.fishbook.Home;
+package com.valchev.plamen.fishbook.home;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseException;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.valchev.plamen.fishbook.R;
+import com.valchev.plamen.fishbook.authentication.AuthenticateUserDialogFragment;
 import com.viewpagerindicator.CirclePageIndicator;
 
 public class HomeActivity extends FragmentActivity {
+
+    private abstract class AbstractUserAuthenticator implements
+            AuthenticateUserDialogFragment.UserAuthenticator,
+            View.OnClickListener,
+            OnFailureListener,
+            OnSuccessListener<AuthResult> {
+
+        protected AuthenticateUserDialogFragment mDialog;
+        protected ProgressDialog mProgressDialog;
+        protected HomeActivity mActivity;
+        protected String mDialogTitle;
+        protected String mEmail;
+        protected String mPassword;
+
+        public AbstractUserAuthenticator(String dialogTitle, String email, String password, HomeActivity activity) {
+
+            mDialogTitle = dialogTitle;
+            mActivity = activity;
+            mEmail = email;
+            mPassword = password;
+        }
+
+        public AbstractUserAuthenticator(String dialogTitle, HomeActivity activity) {
+
+            mDialogTitle = dialogTitle;
+            mActivity = activity;
+        }
+
+        @Override
+        public void onClick(View v) {
+
+            if( mDialog == null ) {
+
+                mDialog = new AuthenticateUserDialogFragment();
+            }
+
+            mDialog.show(mDialogTitle, null, mEmail, mPassword, mActivity.getSupportFragmentManager(), this);
+        }
+
+        @Override
+        public void authenticateUser(String email, String password) {
+
+            mEmail = email;
+            mPassword = password;
+
+            String message = getString(R.string.authenticating);
+
+            mProgressDialog = ProgressDialog.show(HomeActivity.this, null, message);
+
+            Task<AuthResult> task = executeAuthenticationTask(email, password);
+
+            task.addOnFailureListener(mActivity, this);
+            task.addOnSuccessListener(mActivity, this);
+        }
+
+        @Override
+        public void onFailure(@NonNull Exception e) {
+
+            if( mProgressDialog != null && mProgressDialog.isShowing() )
+                mProgressDialog.dismiss();
+
+            String message = mDialogTitle + " " + getString(R.string.failed) + ".";
+            FirebaseException exception = (FirebaseException)e;
+
+            message = message + " " + exception.getLocalizedMessage();
+
+            mDialog.show(mDialogTitle, message, mEmail, mPassword, mActivity.getSupportFragmentManager(), this);
+
+            mEmail = null;
+            mPassword = null;
+        }
+
+        @Override
+        public void onSuccess(AuthResult authResult) {
+
+            if( mProgressDialog != null && mProgressDialog.isShowing() )
+                mProgressDialog.dismiss();
+
+            mEmail = null;
+            mPassword = null;
+        }
+
+        protected abstract Task<AuthResult> executeAuthenticationTask(String email, String password);
+    }
 
     protected final static long VIEWPAGER_SLIDE_DELAY		= 3000;
     protected final static long VIEWPAGER_DELAY_USER_VIEW 	= 6000;
@@ -40,29 +136,25 @@ public class HomeActivity extends FragmentActivity {
         mSignInButton = (Button) findViewById(R.id.home_login_button);
         mSignUpButton = (Button) findViewById(R.id.home_sign_up_button);
 
-        mSignUpButton.setOnClickListener(new View.OnClickListener() {
+        mSignUpButton.setOnClickListener(new AbstractUserAuthenticator(getString(R.string.sign_up), HomeActivity.this) {
 
             @Override
-            public void onClick(View v) {
+            protected Task<AuthResult> executeAuthenticationTask(String email, final String password) {
 
-                AuthenticateUserDialogFragment authenticateUserDialog = new AuthenticateUserDialogFragment();
-                FragmentManager fragmentManager = getSupportFragmentManager();
+                FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
 
-                authenticateUserDialog.setTitle(R.string.sign_up);
-                authenticateUserDialog.show(fragmentManager, "authenticate_dialog_fragment");
+                return firebaseAuth.createUserWithEmailAndPassword(email, password);
             }
         });
 
-        mSignInButton.setOnClickListener(new View.OnClickListener() {
+        mSignInButton.setOnClickListener(new AbstractUserAuthenticator(getString(R.string.sign_in), HomeActivity.this) {
 
             @Override
-            public void onClick(View v) {
+            protected Task<AuthResult> executeAuthenticationTask(String email, String password) {
 
-                AuthenticateUserDialogFragment authenticateUserDialog = new AuthenticateUserDialogFragment();
-                FragmentManager fragmentManager = getSupportFragmentManager();
+                FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
 
-                authenticateUserDialog.setTitle(R.string.sign_in);
-                authenticateUserDialog.show(fragmentManager, "authenticate_dialog_fragment");
+                return firebaseAuth.signInWithEmailAndPassword(email, password);
             }
         });
 
@@ -81,28 +173,30 @@ public class HomeActivity extends FragmentActivity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-                switch( event.getAction() ) {
+            switch( event.getAction() ) {
 
-                    case MotionEvent.ACTION_CANCEL:
-                        break;
+                case MotionEvent.ACTION_CANCEL:
+                    break;
 
-                    case MotionEvent.ACTION_UP:
-                        // calls when touch release on ViewPager
-                        mStopSliding = false;
+                case MotionEvent.ACTION_UP:
+                    // calls when touch release on ViewPager
+                    mStopSliding = false;
 
-                        slideViewPager(mHomePagerAdapter.getCount());
-                        mHandler.postDelayed(mAnimateViewPager, VIEWPAGER_DELAY_USER_VIEW);
-                        break;
+                    slideViewPager(mHomePagerAdapter.getCount());
+                    mHandler.postDelayed(mAnimateViewPager, VIEWPAGER_DELAY_USER_VIEW);
+                    break;
 
-                    case MotionEvent.ACTION_MOVE:
-                        // calls when ViewPager touch
-                        if( mHandler != null && !mStopSliding )
-                            mHandler.removeCallbacks(mAnimateViewPager);
-                        break;
+                case MotionEvent.ACTION_MOVE:
+                    // calls when ViewPager touch
+                    if( mHandler != null && !mStopSliding ) {
 
-                }
+                        mHandler.removeCallbacks(mAnimateViewPager);
+                    }
+                    break;
 
-                return false;
+            }
+
+            return false;
             }
         });
 
@@ -118,15 +212,15 @@ public class HomeActivity extends FragmentActivity {
             @Override
             public void run() {
 
-                if( !mStopSliding ) {
+            if( !mStopSliding ) {
 
-                    if( mViewPager.getCurrentItem() == size - 1 )
-                        mViewPager.setCurrentItem(0);
-                    else
-                        mViewPager.setCurrentItem(mViewPager.getCurrentItem() + 1);
+                if( mViewPager.getCurrentItem() == size - 1 )
+                    mViewPager.setCurrentItem(0);
+                else
+                    mViewPager.setCurrentItem(mViewPager.getCurrentItem() + 1);
 
-                    mHandler.postDelayed(mAnimateViewPager, VIEWPAGER_SLIDE_DELAY);
-                }
+                mHandler.postDelayed(mAnimateViewPager, VIEWPAGER_SLIDE_DELAY);
+            }
             }
         };
     }

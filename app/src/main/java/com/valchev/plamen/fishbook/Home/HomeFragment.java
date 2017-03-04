@@ -1,4 +1,4 @@
-package com.valchev.plamen.fishbook.Home;
+package com.valchev.plamen.fishbook.home;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -9,7 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.valchev.plamen.fishbook.Global.FishbookApplication;
+import com.valchev.plamen.fishbook.global.FishbookApplication;
 import com.valchev.plamen.fishbook.R;
 
 import java.util.ArrayList;

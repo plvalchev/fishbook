@@ -1,4 +1,4 @@
-package com.valchev.plamen.fishbook.Global;
+package com.valchev.plamen.fishbook.global;
 
 
 import android.app.Application;

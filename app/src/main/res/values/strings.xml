@@ -3,6 +3,8 @@
     <string name="app_name">Fishbook</string>
     <string name="sign_in">Sign in</string>
     <string name="sign_up">Sign up</string>
+    <string name="authenticating">Authenticating...</string>
+    <string name="failed">failed</string>
 
     <string name="log_your_catches">Log your catches in an easy way with detailed information</string>
     <string name="capture_and_share_snapshots">Capture and share snapshots from your fishing adventures</string>
@@ -21,5 +23,6 @@
     <string name="error_invalid_password">This password is too short</string>
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
+    <string name="error_sign_up">Sign up failed.</string>
 
 </resources>
