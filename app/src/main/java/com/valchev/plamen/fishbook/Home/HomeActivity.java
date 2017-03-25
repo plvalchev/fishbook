@@ -1,6 +1,7 @@
 package com.valchev.plamen.fishbook.home;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -106,6 +107,10 @@ public class HomeActivity extends FragmentActivity {
 
             mEmail = null;
             mPassword = null;
+
+            Intent intent = new Intent(mActivity.getBaseContext(), MainActivity.class);
+
+            mActivity.startActivity(intent);
         }
 
         protected abstract Task<AuthResult> executeAuthenticationTask(String email, String password);
@@ -129,6 +134,16 @@ public class HomeActivity extends FragmentActivity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         super.onCreate(savedInstanceState);
+
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if( firebaseUser != null ) {
+
+            Intent intent = new Intent(getBaseContext(), MainActivity.class);
+
+            startActivity(intent);
+        }
+
         setContentView(R.layout.activity_home);
 
         mViewPager = (ViewPager) findViewById(R.id.home_viewpager);
@@ -215,9 +230,9 @@ public class HomeActivity extends FragmentActivity {
             if( !mStopSliding ) {
 
                 if( mViewPager.getCurrentItem() == size - 1 )
-                    mViewPager.setCurrentItem(0);
+                    mViewPager.setCurrentItem(0, true);
                 else
-                    mViewPager.setCurrentItem(mViewPager.getCurrentItem() + 1);
+                    mViewPager.setCurrentItem(mViewPager.getCurrentItem() + 1, true);
 
                 mHandler.postDelayed(mAnimateViewPager, VIEWPAGER_SLIDE_DELAY);
             }

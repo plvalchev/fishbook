@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v7.widget.SearchView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/search_view">
+
+    </android.support.v7.widget.SearchView>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginStart="@dimen/toolbar_margin"
+        android:layout_marginEnd="@dimen/toolbar_margin"
+        android:layout_marginTop="-8dp"
+        android:background="@android:color/white"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/search_view_hint"
+        android:text="@string/search_hint"
+        android:layout_marginTop="-28dp"
+        android:layout_marginStart="48dp"
+        android:textColor="@android:color/white"
+        android:background="@android:color/transparent"/>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="20dp"
+        android:paddingLeft="@dimen/toolbar_margin"
+        android:paddingRight="@dimen/toolbar_margin">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+            <com.shamanland.fonticon.FontIconView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/btn_news_feed"
+                android:text="@string/news_feed_icon"
+                android:textSize="@dimen/navigation_icon_size"
+                android:textColor="@android:color/white"
+                android:clickable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"/>
+
+            <com.shamanland.fonticon.FontIconView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/btn_friends"
+                android:text="@string/friends_icon"
+                android:textSize="@dimen/navigation_icon_size"
+                android:textColor="@android:color/white"
+                android:layout_marginStart="@dimen/navigation_button_margin"
+                android:clickable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"/>
+
+            <com.shamanland.fonticon.FontIconView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/btn_notifications"
+                android:text="@string/notifications_icon"
+                android:textSize="@dimen/navigation_icon_size"
+                android:textColor="@android:color/white"
+                android:layout_marginStart="@dimen/navigation_button_margin"
+                android:clickable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="right">
+
+            <com.shamanland.fonticon.FontIconView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/btn_edit_profile"
+                android:text="@string/edit_profile_icon"
+                android:textSize="@dimen/navigation_icon_size"
+                android:textColor="@android:color/white"
+                android:clickable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

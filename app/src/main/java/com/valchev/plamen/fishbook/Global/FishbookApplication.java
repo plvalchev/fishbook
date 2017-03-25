@@ -4,6 +4,8 @@ package com.valchev.plamen.fishbook.global;
 import android.app.Application;
 import android.content.Context;
 
+import com.shamanland.fonticon.FontIconTypefaceHolder;
+
 public class FishbookApplication extends Application {
 
     private static Context mContext;
@@ -20,5 +22,7 @@ public class FishbookApplication extends Application {
 
         //
         mContext = this;
+
+        FontIconTypefaceHolder.init(getAssets(), "fontawesome.ttf");
     }
 }

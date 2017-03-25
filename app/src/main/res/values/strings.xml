@@ -1,5 +1,15 @@
 <resources>
 
+    <!-- Font Icons -->
+    <string name="news_feed_icon">&#xf24a;</string>
+    <string name="news_feed_pressed_icon">&#xf249;</string>
+    <string name="friends_icon">&#xf2ba;</string>
+    <string name="friends_pressed_icon">&#xf2b9;</string>
+    <string name="notifications_icon">&#xf0a2;</string>
+    <string name="notifications_pressed_icon">&#xf0f3;</string>
+    <string name="edit_profile_icon">&#xf2c0;</string>
+    <string name="edit_profile_pressed_icon">&#xf007;</string>
+
     <string name="app_name">Fishbook</string>
     <string name="sign_in">Sign in</string>
     <string name="sign_up">Sign up</string>
@@ -11,6 +21,7 @@
     <string name="explore_pictures_and_catches">Explore pictures and catches you might like</string>
     <string name="discover_interesting_anglers">Discover interesting anglers</string>
     <string name="title_activity_sign_up">Sign up</string>
+    <string name="search_hint">Search for fishing adventures...</string>
 
     <string name="prompt_name">Name</string>
     <string name="prompt_email">Email</string>
@@ -24,5 +35,7 @@
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
     <string name="error_sign_up">Sign up failed.</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="action_settings">Settings</string>
 
 </resources>
