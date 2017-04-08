@@ -11,5 +11,4 @@
     tools:context="com.valchev.plamen.fishbook.home.EditProfileFragment"
     tools:showIn="@layout/activity_main">
 
-
 </RelativeLayout>

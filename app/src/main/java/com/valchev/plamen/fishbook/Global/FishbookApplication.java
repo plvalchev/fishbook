@@ -4,6 +4,7 @@ package com.valchev.plamen.fishbook.global;
 import android.app.Application;
 import android.content.Context;
 
+import com.facebook.drawee.backends.pipeline.Fresco;
 import com.shamanland.fonticon.FontIconTypefaceHolder;
 
 public class FishbookApplication extends Application {
@@ -24,5 +25,6 @@ public class FishbookApplication extends Application {
         mContext = this;
 
         FontIconTypefaceHolder.init(getAssets(), "fontawesome.ttf");
+        Fresco.initialize(this);
     }
 }

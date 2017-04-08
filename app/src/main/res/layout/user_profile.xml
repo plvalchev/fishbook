@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    android:orientation="vertical"
+    android:background="@color/colorWindowBackground">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.facebook.drawee.view.SimpleDraweeView
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:id="@+id/cover_photo"
+            android:scaleType="centerCrop"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="200dp"
+            android:background="@drawable/cover_photo_gradient"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:id="@+id/layout_user_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginTop="200dp"
+                android:orientation="vertical"
+                android:elevation="4dp"
+                android:padding="8dp"
+                android:background="@drawable/rounded_corners">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="John Doe"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:paddingTop="70dp"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
+
+                <include
+                    android:id="@+id/regions"
+                    layout="@layout/expandable_text_item" />
+
+                <include
+                    android:id="@+id/species"
+                    layout="@layout/expandable_text_item" />
+
+                <include
+                    android:id="@+id/methods"
+                    layout="@layout/expandable_text_item" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="128dp"
+                android:layout_height="128dp"
+                android:layout_marginTop="150dp"
+                android:layout_below="@id/layout_user_info"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:elevation="8dp"
+                android:background="@drawable/circle_shape">
+
+                <com.facebook.drawee.view.SimpleDraweeView
+                    android:id="@+id/profile_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:roundAsCircle="true"
+                    app:roundingBorderWidth="3dp"
+                    app:roundingBorderColor="@android:color/white"/>
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+    </FrameLayout>
+
+</android.support.v4.widget.NestedScrollView>

@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
     tools:context="com.valchev.plamen.fishbook.home.MainActivity">
 
     <android.support.design.widget.AppBarLayout
@@ -15,16 +14,50 @@
         <android.support.v7.widget.Toolbar
             android:layout_height="match_parent"
             android:layout_width="match_parent"
-            android:id="@+id/toolbar">
+            android:id="@+id/toolbar"
+            app:layout_scrollFlags="scroll|enterAlways">
 
             <include layout="@layout/toolbar_main" />
 
         </android.support.v7.widget.Toolbar>
 
+        <android.support.design.widget.TabLayout
+            android:id="@+id/tab_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/toolbar"
+            android:elevation="6dp"
+            app:tabIndicatorColor="@android:color/white">
+
+            <android.support.design.widget.TabItem
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:icon="@mipmap/ic_public_white_24dp"/>
+
+            <android.support.design.widget.TabItem
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:icon="@drawable/friends_selector"/>
+
+            <android.support.design.widget.TabItem
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:icon="@drawable/notifications_selector"/>
+
+            <android.support.design.widget.TabItem
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:icon="@drawable/edit_profile_selector"/>
+
+        </android.support.design.widget.TabLayout>
+
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_main" />
+    <android.support.v4.view.ViewPager
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/navigation_view_pager">
 
-
+    </android.support.v4.view.ViewPager>
 
 </android.support.design.widget.CoordinatorLayout>

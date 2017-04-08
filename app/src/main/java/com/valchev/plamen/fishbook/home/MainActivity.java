@@ -2,28 +2,34 @@ package com.valchev.plamen.fishbook.home;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.TextView;
 
+import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.shamanland.fonticon.FontIconView;
 import com.valchev.plamen.fishbook.R;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
 
-    protected NavigationManager mNavigationManager;
-    protected FontIconView mNewsFeedButton;
-    protected FontIconView mFriendsButton;
-    protected FontIconView mNotificationsButton;
-    protected FontIconView mEditProfileButton;
     protected SearchView mSearchView;
     protected TextView mSearchViewHint;
+    protected MainPagerAdapter mMainPagerAdapter;
+    protected ViewPager mViewPager;
+    protected TabLayout mTabLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,20 +39,19 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
-        mNewsFeedButton = (FontIconView) findViewById(R.id.btn_news_feed);
-        mFriendsButton = (FontIconView) findViewById(R.id.btn_friends);
-        mNotificationsButton = (FontIconView) findViewById(R.id.btn_notifications);
-        mEditProfileButton = (FontIconView) findViewById(R.id.btn_edit_profile);
+        mTabLayout = (TabLayout) findViewById(R.id.tab_layout);
         mSearchView = (SearchView) findViewById(R.id.search_view);
         mSearchViewHint = (TextView) findViewById(R.id.search_view_hint);
+        mViewPager = (ViewPager) findViewById(R.id.navigation_view_pager);
 
+        initViewPager();
         initSearchView();
-        initNavigationManager();
-
-        mNavigationManager.setCurrentSelectedButton( mEditProfileButton );
+        initTabLayout();
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+        getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
     }
 
     @Override
@@ -54,7 +59,14 @@ public class MainActivity extends AppCompatActivity {
 
         super.onRestoreInstanceState(savedInstanceState);
 
-        mSearchViewHint.setVisibility( mSearchView.isIconified() ? View.VISIBLE : View.GONE );
+        mSearchViewHint.setVisibility(mSearchView.isIconified() ? View.VISIBLE : View.GONE);
+    }
+
+    protected void initViewPager() {
+
+        mMainPagerAdapter = new MainPagerAdapter(getSupportFragmentManager());
+        mViewPager.setAdapter(mMainPagerAdapter);
+        mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(mTabLayout));
     }
 
     protected void initSearchView() {
@@ -64,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if( mSearchView.isIconified() )
+                if (mSearchView.isIconified())
                     mSearchView.setIconified(false);
 
                 mSearchViewHint.setVisibility(View.GONE);
@@ -91,13 +103,26 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    protected void initNavigationManager() {
+    protected void initTabLayout() {
 
-        mNavigationManager = new NavigationManager( null );
+        mTabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
-        mNavigationManager.addNavigationButton( mNewsFeedButton, 0, R.string.news_feed_icon, R.string.news_feed_pressed_icon );
-        mNavigationManager.addNavigationButton( mFriendsButton, 0, R.string.friends_icon, R.string.friends_pressed_icon );
-        mNavigationManager.addNavigationButton( mNotificationsButton, 0, R.string.notifications_icon, R.string.notifications_pressed_icon );
-        mNavigationManager.addNavigationButton( mEditProfileButton, 0, R.string.edit_profile_icon, R.string.edit_profile_pressed_icon );
+        ArrayList<Drawable> tabLayoutDrawables = new ArrayList<Drawable>();
+
+        int tabCount = mTabLayout.getTabCount();
+
+        for( int index = 0; index < tabCount; index++ ) {
+
+            tabLayoutDrawables.add(mTabLayout.getTabAt(index).getIcon());
+        }
+
+        mTabLayout.setupWithViewPager( mViewPager );
+
+        for( int index = 0; index < tabCount; index++ ) {
+
+            Drawable drawable = tabLayoutDrawables.get(index);
+
+            mTabLayout.getTabAt(index).setIcon(drawable);
+        }
     }
 }

@@ -151,6 +151,12 @@ public class HomeActivity extends FragmentActivity {
         mSignInButton = (Button) findViewById(R.id.home_login_button);
         mSignUpButton = (Button) findViewById(R.id.home_sign_up_button);
 
+        initButtons();
+        initViewPager();
+    }
+
+    protected void initButtons() {
+
         mSignUpButton.setOnClickListener(new AbstractUserAuthenticator(getString(R.string.sign_up), HomeActivity.this) {
 
             @Override
@@ -172,8 +178,6 @@ public class HomeActivity extends FragmentActivity {
                 return firebaseAuth.signInWithEmailAndPassword(email, password);
             }
         });
-
-        initViewPager();
     }
 
     protected void initViewPager() {
