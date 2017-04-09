@@ -24,6 +24,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.valchev.plamen.fishbook.R;
 import com.valchev.plamen.fishbook.authentication.AuthenticateUserDialogFragment;
+import com.valchev.plamen.fishbook.global.FishbookUser;
 import com.viewpagerindicator.CirclePageIndicator;
 
 public class HomeActivity extends FragmentActivity {

@@ -41,12 +41,24 @@
                 android:padding="8dp"
                 android:background="@drawable/rounded_corners">
 
+                <Button
+                    android:id="@+id/edit_profile_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="..."
+                    android:textColor="@android:color/black"
+                    android:textSize="24sp"
+                    android:layout_gravity="right"
+                    app:colorControlHighlight="@android:color/white"
+                    android:background="?android:attr/selectableItemBackground" />
+
                 <TextView
+                    android:id="@+id/display_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="John Doe"
                     android:gravity="center_vertical|center_horizontal"
-                    android:paddingTop="70dp"
+                    android:paddingTop="28dp"
                     android:textSize="24sp"
                     android:textStyle="bold"
                     android:textColor="@android:color/black"/>
@@ -72,8 +84,7 @@
                 android:layout_below="@id/layout_user_info"
                 android:layout_alignParentTop="true"
                 android:layout_centerHorizontal="true"
-                android:elevation="8dp"
-                android:background="@drawable/circle_shape">
+                android:elevation="8dp">
 
                 <com.facebook.drawee.view.SimpleDraweeView
                     android:id="@+id/profile_image"
@@ -81,7 +92,9 @@
                     android:layout_height="match_parent"
                     app:roundAsCircle="true"
                     app:roundingBorderWidth="3dp"
-                    app:roundingBorderColor="@android:color/white"/>
+                    app:roundingBorderColor="@android:color/white"
+                    app:backgroundImage="@android:color/white"
+                    app:placeholderImage="@mipmap/ic_person_black_48dp"/>
 
             </LinearLayout>
 
