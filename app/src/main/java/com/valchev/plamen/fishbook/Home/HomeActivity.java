@@ -13,6 +13,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -108,10 +109,6 @@ public class HomeActivity extends FragmentActivity {
 
             mEmail = null;
             mPassword = null;
-
-            Intent intent = new Intent(mActivity.getBaseContext(), MainActivity.class);
-
-            mActivity.startActivity(intent);
         }
 
         protected abstract Task<AuthResult> executeAuthenticationTask(String email, String password);
@@ -128,6 +125,8 @@ public class HomeActivity extends FragmentActivity {
     protected Handler mHandler;
     protected Button mSignInButton;
     protected Button mSignUpButton;
+    protected LinearLayout mSignInLayout;
+    protected LinearLayout mSignUpLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,24 +135,46 @@ public class HomeActivity extends FragmentActivity {
 
         super.onCreate(savedInstanceState);
 
-        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-
-        if( firebaseUser != null ) {
-
-            Intent intent = new Intent(getBaseContext(), MainActivity.class);
-
-            startActivity(intent);
-        }
-
         setContentView(R.layout.activity_home);
 
         mViewPager = (ViewPager) findViewById(R.id.home_viewpager);
         mViewPagerIndicator	= (CirclePageIndicator) findViewById(R.id.home_viewpager_indicator);
-        mSignInButton = (Button) findViewById(R.id.home_login_button);
+        mSignInButton = (Button) findViewById(R.id.home_sign_in_button);
         mSignUpButton = (Button) findViewById(R.id.home_sign_up_button);
+        mSignInLayout = (LinearLayout) findViewById(R.id.home_sign_in_layout);
+        mSignUpLayout = (LinearLayout) findViewById(R.id.home_sign_up_layout);
 
         initButtons();
         initViewPager();
+
+        mSignInButton.setVisibility(View.GONE);
+        mSignUpButton.setVisibility(View.GONE);
+        mSignInLayout.setVisibility(View.GONE);
+        mSignUpLayout.setVisibility(View.GONE);
+
+        FishbookUser.loadCurrentUserInBackground(new FishbookUser.UserAuthStateListener() {
+
+            @Override
+            public void onAuthStateChanged(FishbookUser fishbookUser) {
+
+                if( fishbookUser != null ) {
+
+                    Intent intent = new Intent(HomeActivity.this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                    startActivity(intent);
+                    finish();
+                }
+                else {
+
+                    mSignInButton.setVisibility(View.VISIBLE);
+                    mSignUpButton.setVisibility(View.VISIBLE);
+                    mSignInLayout.setVisibility(View.VISIBLE);
+                    mSignUpLayout.setVisibility(View.VISIBLE);
+                }
+            }
+        });
     }
 
     protected void initButtons() {

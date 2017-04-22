@@ -64,11 +64,11 @@
                     android:textColor="@android:color/black"/>
 
                 <include
-                    android:id="@+id/regions"
+                    android:id="@+id/species"
                     layout="@layout/expandable_text_item" />
 
                 <include
-                    android:id="@+id/species"
+                    android:id="@+id/regions"
                     layout="@layout/expandable_text_item" />
 
                 <include

@@ -1,5 +1,6 @@
 package com.valchev.plamen.fishbook.home;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -15,8 +16,12 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.drawable.ProgressBarDrawable;
+import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
+import com.facebook.imagepipeline.request.ImageRequest;
+import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -52,9 +57,6 @@ public class EditProfileFragment extends Fragment {
 
     private final static int REQUEST_CODE_COVER_PHOTO_PICKER = 2000;
     private final static int REQUEST_CODE_PROFILE_PICTURE_PICKER = 2001;
-    private static final String KEY_PROFILE_PICTURES_POSITION = "PROFILE_PICTURES_POSITION";
-    private static final String KEY_COVER_PHOTOS_PISITON = "COVER_PHOTOS_POSITION";
-    private static final String KEY_USER_DATA = "USER_DATA";
 
     protected FishbookUser mFishbookUser;
     protected User mUserData;
@@ -70,9 +72,6 @@ public class EditProfileFragment extends Fragment {
     protected ArrayList<String> mCoverPhotos;
     protected int mProfilePicturesCurrentPosition;
     protected int mCoverPhotosCurrentPosition;
-
-
-    static String[] test = new String[] { "https://wallpaperscraft.com/image/fishing_gear_shoes_64538_1024x768.jpg", "https://scontent-frt3-1.xx.fbcdn.net/v/l/t1.0-9/14484832_10207954542601473_5993629062988162629_n.jpg?oh=3447efedcb5bdef8e55627513838e225&oe=5953DE1D" };
 
     public EditProfileFragment() {
 
@@ -108,11 +107,6 @@ public class EditProfileFragment extends Fragment {
 
         mFishbookUser = FishbookUser.getCurrentUser();
 
-        if (savedInstanceState != null) {
-            mProfilePicturesCurrentPosition = savedInstanceState.getInt(KEY_PROFILE_PICTURES_POSITION);
-            mCoverPhotosCurrentPosition = savedInstanceState.getInt(KEY_COVER_PHOTOS_PISITON);
-        }
-
         initUserProfile();
 
         mFishbookUser.addUserValueEventListener(new FishbookUser.UserValueEventListener() {
@@ -134,14 +128,6 @@ public class EditProfileFragment extends Fragment {
         initPopupMenu();
 
         return view;
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-
-        outState.putInt(KEY_PROFILE_PICTURES_POSITION, mProfilePicturesCurrentPosition);
-        outState.putInt(KEY_COVER_PHOTOS_PISITON, mCoverPhotosCurrentPosition);
-        super.onSaveInstanceState(outState);
     }
 
     void initUserProfile() {
@@ -167,13 +153,21 @@ public class EditProfileFragment extends Fragment {
 
             String actualProfilePictureUri = mProfilePictures.get(0);
 
-            mProfilePicture.setImageURI(Uri.parse(actualProfilePictureUri));
+            ImageRequest request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(actualProfilePictureUri))
+                    .setProgressiveRenderingEnabled(true)
+                    .build();
+            DraweeController controller = Fresco.newDraweeControllerBuilder()
+                    .setImageRequest(request)
+                    .setOldController(mProfilePicture.getController())
+                    .build();
+
+            mProfilePicture.setController(controller);
             mProfilePicture.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
 
-                    showProfilePicturesImageViewer(0);
+                    showImages(0, mProfilePictures);
                 }
             });
         }
@@ -194,81 +188,36 @@ public class EditProfileFragment extends Fragment {
 
             String actualCoverPhotoUri = mCoverPhotos.get(0);
 
-            mCoverPhoto.setImageURI(Uri.parse(actualCoverPhotoUri));
+            ImageRequest request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(actualCoverPhotoUri))
+                    .setProgressiveRenderingEnabled(true)
+                    .build();
+            DraweeController controller = Fresco.newDraweeControllerBuilder()
+                    .setImageRequest(request)
+                    .setOldController(mCoverPhoto.getController())
+                    .build();
+
+            mCoverPhoto.setController(controller);
             mCoverPhoto.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
 
-                    showCoverPhotosImageViewer(0);
+                    showImages(0, mCoverPhotos);
                 }
             });
         }
-
-
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
+    void showImages(int nStartPosition, ArrayList<String> images) {
 
-        if (mProfilePicturesCurrentPosition >= 0
-                && mProfilePictures != null
-                && mProfilePicturesCurrentPosition < mProfilePictures.size() - 1 ) {
+        Activity activity = getActivity();
 
-            showProfilePicturesImageViewer(mProfilePicturesCurrentPosition);
+        if( activity != null && activity instanceof MainActivity ) {
 
-        } else if( mCoverPhotosCurrentPosition >= 0
-                && mCoverPhotos != null
-                && mCoverPhotosCurrentPosition < mCoverPhotos.size() - 1 ) {
+            MainActivity mainActivity = (MainActivity) activity;
 
-            showCoverPhotosImageViewer(mCoverPhotosCurrentPosition);
+            mainActivity.showImages(nStartPosition, images);
         }
-    }
-
-    void showCoverPhotosImageViewer(int nStartPosition) {
-
-        mCoverPhotosCurrentPosition = nStartPosition;
-
-        new ImageViewer.Builder(getActivity(), mCoverPhotos)
-                .setStartPosition(nStartPosition)
-                .setImageMarginPx(20)
-                .setImageChangeListener(new ImageViewer.OnImageChangeListener() {
-                    @Override
-                    public void onImageChange(int position) {
-                        mCoverPhotosCurrentPosition = position;
-                    }
-                })
-                .setOnDismissListener(new ImageViewer.OnDismissListener() {
-                    @Override
-                    public void onDismiss() {
-                        mCoverPhotosCurrentPosition = -1;
-                    }
-                })
-                .show();
-    }
-
-    void showProfilePicturesImageViewer(int nStartPosition) {
-
-        mProfilePicturesCurrentPosition = nStartPosition;
-
-        new ImageViewer.Builder(getActivity(), mProfilePictures)
-                .setStartPosition(nStartPosition)
-                .setImageMarginPx(20)
-                .setImageChangeListener(new ImageViewer.OnImageChangeListener() {
-                    @Override
-                    public void onImageChange(int position) {
-                        mProfilePicturesCurrentPosition = position;
-                    }
-                })
-                .setOnDismissListener(new ImageViewer.OnDismissListener() {
-                    @Override
-                    public void onDismiss() {
-                        mProfilePicturesCurrentPosition = -1;
-                    }
-                })
-                .show();
-
     }
 
     void initPopupMenu() {
@@ -300,6 +249,10 @@ public class EditProfileFragment extends Fragment {
                         editSettings();
                         break;
 
+                    case R.id.action_sign_out:
+                        signOut();
+                        break;
+
                     default:
                         result = false;
                         break;
@@ -325,6 +278,25 @@ public class EditProfileFragment extends Fragment {
 
     protected void editSettings() {
 
+    }
+
+    protected void signOut() {
+
+        FishbookUser fishbookUser = FishbookUser.getCurrentUser();
+
+        if( fishbookUser != null ) {
+
+            fishbookUser.signOut();
+        }
+
+        Activity activity = getActivity();
+
+        Intent intent = new Intent(activity, HomeActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        activity.startActivity(intent);
+        activity.finish();
     }
 
     protected void startSingleImagePicker(int requestCode) {

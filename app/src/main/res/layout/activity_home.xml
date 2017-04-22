@@ -52,6 +52,7 @@
                 android:orientation="horizontal">
 
                 <LinearLayout
+                    android:id="@+id/home_sign_up_layout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="0.5"
@@ -69,6 +70,7 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/home_sign_in_layout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="0.5"
@@ -76,7 +78,7 @@
                     android:background="@drawable/home_button_default">
 
                     <Button
-                        android:id="@+id/home_login_button"
+                        android:id="@+id/home_sign_in_button"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:text="@string/sign_in"

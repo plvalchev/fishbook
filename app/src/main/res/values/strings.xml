@@ -15,9 +15,9 @@
     <string name="sign_up">Sign up</string>
     <string name="authenticating">Authenticating...</string>
     <string name="failed">failed</string>
-    <string name="regions">Top fishing regions:</string>
-    <string name="chased_species">Most chased species:</string>
-    <string name="fishing_methods">Fishing methods:</string>
+    <string name="regions">Top fishing regions</string>
+    <string name="chased_species">Most chased species</string>
+    <string name="fishing_methods">Fishing methods</string>
 
     <string name="log_your_catches">Log your catches in an easy way with detailed information</string>
     <string name="capture_and_share_snapshots">Capture and share snapshots from your fishing adventures</string>

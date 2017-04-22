@@ -1,11 +1,13 @@
 package com.valchev.plamen.fishbook.global;
 
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -21,10 +23,13 @@ import com.valchev.plamen.fishbook.models.PersonalInformation;
 import com.valchev.plamen.fishbook.models.ProfilePicture;
 import com.valchev.plamen.fishbook.models.User;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.UUID;
+
+import id.zelory.compressor.Compressor;
 
 /**
  * Created by admin on 9.4.2017 г..
@@ -34,9 +39,13 @@ public class FishbookUser implements ValueEventListener {
 
     public interface UserValueEventListener {
 
-        public void onDataChange(User user);
-        public void onCancelled(DatabaseError databaseError);
+        void onDataChange(User user);
+        void onCancelled(DatabaseError databaseError);
+    }
 
+    public interface UserAuthStateListener {
+
+        void onAuthStateChanged(FishbookUser fishbookUser);
     }
 
     protected String mUid;
@@ -46,21 +55,48 @@ public class FishbookUser implements ValueEventListener {
     protected ArrayList<UserValueEventListener> mUserValueEventListeners;
 
     protected static FishbookUser mCurrentUser;
+    protected static FirebaseAuth.AuthStateListener mFireBaseAuthStateListener;
 
     public FishbookUser(String uid) {
 
         mUid = uid;
-        mUserData = new User();
         mDatabaseReference = FirebaseDatabase.getInstance().getReference();
         mStorageReference = FirebaseStorage.getInstance().getReference();
     }
 
+    public static void loadCurrentUserInBackground(final UserAuthStateListener userAuthStateListener) {
+
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+
+        if( mFireBaseAuthStateListener != null )
+            firebaseAuth.removeAuthStateListener(mFireBaseAuthStateListener);
+
+        mFireBaseAuthStateListener = new FirebaseAuth.AuthStateListener() {
+
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+
+                FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+
+                if( firebaseUser != null ) {
+
+                    mCurrentUser = new FishbookUser(firebaseUser.getUid());
+                    mCurrentUser.reloadUserInBackground();
+                }
+                else {
+
+                    mCurrentUser = null;
+                }
+
+                if( userAuthStateListener != null )
+                    userAuthStateListener.onAuthStateChanged(mCurrentUser);
+            }
+        };
+
+        firebaseAuth.addAuthStateListener(mFireBaseAuthStateListener);
+    }
+
     public static FishbookUser getCurrentUser() {
-
-        if( mCurrentUser == null ) {
-
-            mCurrentUser = new FishbookUser(FirebaseAuth.getInstance().getCurrentUser().getUid());
-        }
 
         return mCurrentUser;
     }
@@ -72,10 +108,10 @@ public class FishbookUser implements ValueEventListener {
 
     public void setCoverPhoto(Image newImage) {
 
-        Uri newCoverPhotoUri = Uri.fromFile(new File(newImage.getPath()));
+        byte[] byteArray = FishbookUtils.resizeAndCompressImage(newImage.getPath(), 1560, 1560);
         String coverPhotoName = "cover_photo_" + UUID.randomUUID().toString();
         StorageReference coverPhotosStorageReference = getCoverPhotosStorageReference(coverPhotoName);
-        UploadTask uploadTask = coverPhotosStorageReference.putFile(newCoverPhotoUri);
+        UploadTask uploadTask = coverPhotosStorageReference.putBytes(byteArray);
 
         uploadTask.addOnFailureListener(new OnFailureListener() {
             @Override
@@ -107,10 +143,10 @@ public class FishbookUser implements ValueEventListener {
 
     public void setProfilePicture(Image newImage) {
 
-        Uri newProfilePictureUri = Uri.fromFile(new File(newImage.getPath()));
+        byte[] byteArray = FishbookUtils.resizeAndCompressImage(newImage.getPath(), 1560, 1560);
         String profilePictureName = "profile_picture" + UUID.randomUUID().toString();
         StorageReference profilePictureStorageReference = getProfilePicturesStorageReference(profilePictureName);
-        UploadTask uploadTask = profilePictureStorageReference.putFile(newProfilePictureUri);
+        UploadTask uploadTask = profilePictureStorageReference.putBytes(byteArray);
 
         uploadTask.addOnFailureListener(new OnFailureListener() {
             @Override
@@ -169,6 +205,18 @@ public class FishbookUser implements ValueEventListener {
         }
     }
 
+    public void reloadUserInBackground() {
+
+        DatabaseReference userDatabaseReference = getUserDatabaseReference();
+        userDatabaseReference.removeEventListener(this);
+        userDatabaseReference.addValueEventListener(this);
+    }
+
+    public void signOut() {
+
+        FirebaseAuth.getInstance().signOut();
+    }
+
     public void addUserValueEventListener(UserValueEventListener valueEventListener) {
 
         if( mUserValueEventListeners == null ) {
@@ -182,9 +230,8 @@ public class FishbookUser implements ValueEventListener {
 
         mUserValueEventListeners.add(valueEventListener);
 
-        DatabaseReference userDatabaseReference = getUserDatabaseReference();
-        userDatabaseReference.removeEventListener(this);
-        userDatabaseReference.addValueEventListener(this);
+        if( mUserData != null )
+            valueEventListener.onDataChange(mUserData);
     }
 
     protected DatabaseReference getCoverPhotosDatabaseReference() {
