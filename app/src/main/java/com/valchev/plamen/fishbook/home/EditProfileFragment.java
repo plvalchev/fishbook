@@ -257,7 +257,10 @@ public class EditProfileFragment extends Fragment {
 
     protected void editSettings() {
 
+        Activity activity = getActivity();
+        Intent intent = new Intent(activity, SettingsActivity.class);
 
+        activity.startActivity(intent);
     }
 
     protected void signOut() {

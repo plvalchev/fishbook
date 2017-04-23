@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="Personal information"
+        android:key="pref_key_personal_information">
+
+        <EditTextPreference
+            android:key="pref_display_name"
+            android:title="Display Name"
+            android:summary="John Doe"
+            android:dialogTitle="Display Name"
+            android:textColor="@android:color/black"/>
+
+    </PreferenceCategory>
+
+
+</PreferenceScreen>

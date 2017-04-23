@@ -106,6 +106,12 @@ public class FishbookUser implements ValueEventListener {
         return mUid;
     }
 
+    public void saveUserData() {
+
+        DatabaseReference userDatabaseReference = getUserDatabaseReference();
+        userDatabaseReference.setValue(mUserData);
+    }
+
     public void setCoverPhoto(Image newImage) {
 
         String coverPhotoName = "cover_photo_" + UUID.randomUUID().toString();
