@@ -1,52 +1,36 @@
 package com.valchev.plamen.fishbook.home;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
-import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v7.view.menu.MenuBuilder;
+import android.support.v7.view.menu.MenuPopupHelper;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.PopupMenu;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
-import com.facebook.drawee.drawable.ProgressBarDrawable;
 import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.facebook.imagepipeline.request.ImageRequest;
-import com.facebook.imagepipeline.request.ImageRequestBuilder;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.ValueEventListener;
 import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.nguyenhoanglam.imagepicker.activity.ImagePicker;
 import com.nguyenhoanglam.imagepicker.activity.ImagePickerActivity;
 import com.nguyenhoanglam.imagepicker.model.Image;
-import com.stfalcon.frescoimageviewer.ImageViewer;
 import com.valchev.plamen.fishbook.R;
-import com.valchev.plamen.fishbook.global.FishbookApplication;
 import com.valchev.plamen.fishbook.global.FishbookUser;
 import com.valchev.plamen.fishbook.models.CoverPhoto;
-import com.valchev.plamen.fishbook.models.FishingMethod;
-import com.valchev.plamen.fishbook.models.FishingRegion;
-import com.valchev.plamen.fishbook.models.PersonalInformation;
 import com.valchev.plamen.fishbook.models.ProfilePicture;
-import com.valchev.plamen.fishbook.models.Specie;
 import com.valchev.plamen.fishbook.models.User;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-
-import de.hdodenhof.circleimageview.CircleImageView;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -66,7 +50,8 @@ public class EditProfileFragment extends Fragment {
     protected ExpandableTextView mFishingMethods;
     protected SimpleDraweeView mProfilePicture;
     protected SimpleDraweeView mCoverPhoto;
-    protected Button mActionButton;
+    protected FloatingActionButton mActionButton;
+    protected ProgressBar mProgressBar;
     protected PopupMenu mPopupMenu;
     protected ArrayList<String> mProfilePictures;
     protected ArrayList<String> mCoverPhotos;
@@ -98,8 +83,9 @@ public class EditProfileFragment extends Fragment {
         mFishingMethods = (ExpandableTextView) methods.findViewById(R.id.expand_text_view);
         mProfilePicture = (SimpleDraweeView) view.findViewById(R.id.profile_image);
         mCoverPhoto = (SimpleDraweeView) view.findViewById(R.id.cover_photo);
-        mActionButton = (Button) view.findViewById(R.id.edit_profile_button);
+        mActionButton = (FloatingActionButton) view.findViewById(R.id.edit_profile_button);
         mDisplayName = (TextView) view.findViewById(R.id.display_name);
+        mProgressBar = (ProgressBar) view.findViewById(R.id.edit_profile_progress);
 
         topFishingRegionsTitle.setText(getResources().getString(R.string.regions));
         mostChasedSpeciesTitle.setText(getResources().getString(R.string.chased_species));
@@ -117,11 +103,14 @@ public class EditProfileFragment extends Fragment {
                 mUserData = user;
 
                 initUserProfile();
+
+                mProgressBar.setVisibility(View.GONE);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
+                mProgressBar.setVisibility(View.GONE);
             }
         });
 
@@ -148,16 +137,14 @@ public class EditProfileFragment extends Fragment {
 
                 ProfilePicture profilePicture = mUserData.profilePictures.get(index);
 
-                mProfilePictures.add(profilePicture.uri);
+                mProfilePictures.add(profilePicture.highResUri);
             }
 
-            String actualProfilePictureUri = mProfilePictures.get(0);
+            ProfilePicture actualProfilePicture = mUserData.profilePictures.get(0);
 
-            ImageRequest request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(actualProfilePictureUri))
-                    .setProgressiveRenderingEnabled(true)
-                    .build();
             DraweeController controller = Fresco.newDraweeControllerBuilder()
-                    .setImageRequest(request)
+                    .setLowResImageRequest(ImageRequest.fromUri(actualProfilePicture.lowResUri))
+                    .setImageRequest(ImageRequest.fromUri(actualProfilePicture.highResUri))
                     .setOldController(mProfilePicture.getController())
                     .build();
 
@@ -183,16 +170,14 @@ public class EditProfileFragment extends Fragment {
 
                 CoverPhoto coverPhoto = mUserData.coverPhotos.get(index);
 
-                mCoverPhotos.add(coverPhoto.uri);
+                mCoverPhotos.add(coverPhoto.highResUri);
             }
 
-            String actualCoverPhotoUri = mCoverPhotos.get(0);
+            CoverPhoto actualCoverPhoto = mUserData.coverPhotos.get(0);
 
-            ImageRequest request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(actualCoverPhotoUri))
-                    .setProgressiveRenderingEnabled(true)
-                    .build();
             DraweeController controller = Fresco.newDraweeControllerBuilder()
-                    .setImageRequest(request)
+                    .setLowResImageRequest(ImageRequest.fromUri(actualCoverPhoto.lowResUri))
+                    .setImageRequest(ImageRequest.fromUri(actualCoverPhoto.highResUri))
                     .setOldController(mCoverPhoto.getController())
                     .build();
 
@@ -233,10 +218,6 @@ public class EditProfileFragment extends Fragment {
 
                 switch (item.getItemId()) {
 
-                    case R.id.action_edit_personal_information:
-                        editPersonalInformation();
-                        break;
-
                     case R.id.action_edit_cover_photo:
                         startSingleImagePicker( REQUEST_CODE_COVER_PHOTO_PICKER );
                         break;
@@ -266,17 +247,16 @@ public class EditProfileFragment extends Fragment {
             @Override
             public void onClick(View v) {
 
+                if( mProgressBar.getVisibility() != View.GONE )
+                    return;
+
                 mPopupMenu.show();
             }
         });
     }
 
-    protected void editPersonalInformation() {
-
-
-    }
-
     protected void editSettings() {
+
 
     }
 
@@ -322,10 +302,12 @@ public class EditProfileFragment extends Fragment {
 
                 case REQUEST_CODE_PROFILE_PICTURE_PICKER:
                     mFishbookUser.setProfilePicture(getFirstSelectedImage(data));
+                    mProgressBar.setVisibility(View.VISIBLE);
                     break;
 
                 case REQUEST_CODE_COVER_PHOTO_PICKER:
                     mFishbookUser.setCoverPhoto(getFirstSelectedImage(data));
+                    mProgressBar.setVisibility(View.VISIBLE);
                     break;
 
                 default:

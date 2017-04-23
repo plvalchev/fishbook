@@ -22,6 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginTop="200dp"
+            android:id="@+id/cover_photo_layout"
             android:background="@drawable/cover_photo_gradient"/>
 
         <RelativeLayout
@@ -32,33 +33,21 @@
                 android:id="@+id/layout_user_info"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
+                android:layout_marginBottom="32dp"
+                android:layout_marginLeft="32dp"
+                android:layout_marginRight="32dp"
                 android:layout_marginTop="200dp"
                 android:orientation="vertical"
                 android:elevation="4dp"
                 android:padding="8dp"
                 android:background="@drawable/rounded_corners">
 
-                <Button
-                    android:id="@+id/edit_profile_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="..."
-                    android:textColor="@android:color/black"
-                    android:textSize="24sp"
-                    android:layout_gravity="right"
-                    app:colorControlHighlight="@android:color/white"
-                    android:background="?android:attr/selectableItemBackground" />
-
                 <TextView
                     android:id="@+id/display_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical|center_horizontal"
-                    android:paddingTop="28dp"
+                    android:paddingTop="72dp"
                     android:textSize="24sp"
                     android:textStyle="bold"
                     android:textColor="@android:color/black"/>
@@ -96,7 +85,36 @@
                     app:backgroundImage="@android:color/white"
                     app:placeholderImage="@mipmap/ic_person_black_48dp"/>
 
+
+
             </LinearLayout>
+
+            <com.dmitrymalkovich.android.ProgressFloatingActionButton
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_alignParentRight="true"
+                android:layout_alignBottom="@id/layout_user_info"
+                android:layout_marginBottom="-24dp"
+                android:clipToPadding="false"
+                android:elevation="8dp">
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/edit_profile_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:elevation="8dp"
+                android:clickable="true"
+                android:src="@mipmap/ic_settings_white_48dp"
+                app:fabSize="mini"/>
+
+                <ProgressBar
+                    android:id="@+id/edit_profile_progress"
+                    style="@style/Widget.AppCompat.ProgressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"/>
+
+            </com.dmitrymalkovich.android.ProgressFloatingActionButton>
 
         </RelativeLayout>
 

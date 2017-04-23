@@ -1,22 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu
-    xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <item
-        android:id="@+id/action_edit_personal_information"
-        android:title="Personal Information" />
-
-    <item
-        android:id="@+id/action_edit_cover_photo"
-        android:title="Cover Photo" />
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/action_edit_profile_picture"
         android:title="Profile Picture" />
 
     <item
+        android:id="@+id/action_edit_cover_photo"
+        android:title="Cover Photo" />
+
+    <item
         android:id="@+id/action_settings"
-        android:title="Settings" />
+        android:title="Settings"/>
 
     <item
         android:id="@+id/action_sign_out"

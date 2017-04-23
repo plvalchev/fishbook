@@ -2,9 +2,13 @@ package com.valchev.plamen.fishbook.global;
 
 import android.graphics.Bitmap;
 
+import com.google.firebase.storage.StorageReference;
+import com.nguyenhoanglam.imagepicker.model.Image;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.OutputStream;
+import java.util.ArrayList;
 
 import id.zelory.compressor.Compressor;
 

@@ -108,72 +108,70 @@ public class FishbookUser implements ValueEventListener {
 
     public void setCoverPhoto(Image newImage) {
 
-        byte[] byteArray = FishbookUtils.resizeAndCompressImage(newImage.getPath(), 1560, 1560);
         String coverPhotoName = "cover_photo_" + UUID.randomUUID().toString();
-        StorageReference coverPhotosStorageReference = getCoverPhotosStorageReference(coverPhotoName);
-        UploadTask uploadTask = coverPhotosStorageReference.putBytes(byteArray);
+        StorageReference lowResCoverPhotosStorageReference = getLowResCoverPhotosStorageReference(coverPhotoName);
+        StorageReference highResCoverPhotosStorageReference = getHighResCoverPhotosStorageReference(coverPhotoName);
 
-        uploadTask.addOnFailureListener(new OnFailureListener() {
+        MultipleImagesUploader multipleImagesUploader = new MultipleImagesUploader();
+        multipleImagesUploader.addOnSuccessListener(new OnSuccessListener<ArrayList<com.valchev.plamen.fishbook.models.Image>>() {
+
             @Override
-            public void onFailure(@NonNull Exception e) {
+            public void onSuccess(ArrayList<com.valchev.plamen.fishbook.models.Image> images) {
 
-                // TODO
-            }
-        });
-
-        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-
-                DatabaseReference userDatabaseReference = getUserDatabaseReference();
-                Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                CoverPhoto coverPhoto = new CoverPhoto(downloadUrl.toString());
+                com.valchev.plamen.fishbook.models.Image coverPhotoImage = images.get(0);
+                CoverPhoto coverPhoto = new CoverPhoto(coverPhotoImage.lowResUri, coverPhotoImage.highResUri);
 
                 if( mUserData.coverPhotos == null ) {
 
-                    mUserData.coverPhotos = new ArrayList<CoverPhoto>();
+                    mUserData.coverPhotos = new ArrayList<>();
                 }
 
                 mUserData.coverPhotos.add(0, coverPhoto);
 
+                DatabaseReference userDatabaseReference = getUserDatabaseReference();
                 userDatabaseReference.setValue(mUserData);
             }
         });
+
+        ArrayList<Image> images = new ArrayList<>();
+
+        images.add(newImage);
+
+        multipleImagesUploader.uploadImages(images, lowResCoverPhotosStorageReference, highResCoverPhotosStorageReference);
     }
 
     public void setProfilePicture(Image newImage) {
 
-        byte[] byteArray = FishbookUtils.resizeAndCompressImage(newImage.getPath(), 1560, 1560);
         String profilePictureName = "profile_picture" + UUID.randomUUID().toString();
-        StorageReference profilePictureStorageReference = getProfilePicturesStorageReference(profilePictureName);
-        UploadTask uploadTask = profilePictureStorageReference.putBytes(byteArray);
+        StorageReference lowResProfilePictureStorageReference = getLowResProfilePicturesStorageReference(profilePictureName);
+        StorageReference highResProfilePictureStorageReference = getHighResProfilePicturesStorageReference(profilePictureName);
 
-        uploadTask.addOnFailureListener(new OnFailureListener() {
+        MultipleImagesUploader multipleImagesUploader = new MultipleImagesUploader();
+        multipleImagesUploader.addOnSuccessListener(new OnSuccessListener<ArrayList<com.valchev.plamen.fishbook.models.Image>>() {
+
             @Override
-            public void onFailure(@NonNull Exception e) {
+            public void onSuccess(ArrayList<com.valchev.plamen.fishbook.models.Image> images) {
 
-                // TODO
-            }
-        });
-
-        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-
-                DatabaseReference userDatabaseReference = getUserDatabaseReference();
-                Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                ProfilePicture profilePicture = new ProfilePicture(downloadUrl.toString());
+                com.valchev.plamen.fishbook.models.Image profilePictureImage = images.get(0);
+                ProfilePicture profilePicture = new ProfilePicture(profilePictureImage.lowResUri, profilePictureImage.highResUri);
 
                 if( mUserData.profilePictures == null ) {
 
-                    mUserData.profilePictures = new ArrayList<ProfilePicture>();
+                    mUserData.profilePictures = new ArrayList<>();
                 }
 
                 mUserData.profilePictures.add(0, profilePicture);
 
+                DatabaseReference userDatabaseReference = getUserDatabaseReference();
                 userDatabaseReference.setValue(mUserData);
             }
         });
+
+        ArrayList<Image> images = new ArrayList<>();
+
+        images.add(newImage);
+
+        multipleImagesUploader.uploadImages(images, lowResProfilePictureStorageReference, highResProfilePictureStorageReference);
     }
 
     @Override
@@ -257,16 +255,30 @@ public class FishbookUser implements ValueEventListener {
         return databaseReference;
     }
 
-    protected StorageReference getCoverPhotosStorageReference(String coverPhotoName) {
+    protected StorageReference getHighResCoverPhotosStorageReference(String coverPhotoName) {
 
-        StorageReference storageReference = mStorageReference.child("images/" + getUid() + "/cover_photos/" + coverPhotoName);
+        StorageReference storageReference = mStorageReference.child("images/" + getUid() + "/cover_photos/high_res/" + coverPhotoName);
 
         return storageReference;
     }
 
-    protected StorageReference getProfilePicturesStorageReference(String profilePictureName) {
+    protected StorageReference getHighResProfilePicturesStorageReference(String profilePictureName) {
 
-        StorageReference storageReference = mStorageReference.child("images/" + getUid() + "/profile_pictures/" + profilePictureName);
+        StorageReference storageReference = mStorageReference.child("images/" + getUid() + "/profile_pictures/high_res/" + profilePictureName);
+
+        return storageReference;
+    }
+
+    protected StorageReference getLowResCoverPhotosStorageReference(String coverPhotoName) {
+
+        StorageReference storageReference = mStorageReference.child("images/" + getUid() + "/cover_photos/low_res/" + coverPhotoName);
+
+        return storageReference;
+    }
+
+    protected StorageReference getLowResProfilePicturesStorageReference(String profilePictureName) {
+
+        StorageReference storageReference = mStorageReference.child("images/" + getUid() + "/profile_pictures/low_res/" + profilePictureName);
 
         return storageReference;
     }
