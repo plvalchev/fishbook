@@ -1,7 +1,6 @@
 package com.valchev.plamen.fishbook.home;
 
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,10 +8,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.drawable.ScalingUtils;
+import com.facebook.drawee.generic.GenericDraweeHierarchy;
 import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.facebook.imagepipeline.request.ImageRequest;
-import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.valchev.plamen.fishbook.R;
 import com.valchev.plamen.fishbook.models.Image;
 
@@ -22,12 +22,13 @@ import java.util.ArrayList;
  * Created by admin on 30.4.2017 г..
  */
 
-public class ImageRecyclerViewAdapter extends RecyclerView.Adapter<ImageRecyclerViewAdapter.ImageViewHolder> {
+public class ImageGridRecyclerViewAdapter extends RecyclerView.Adapter<ImageGridRecyclerViewAdapter.ImageViewHolder> {
 
     public static int INFINITY = 0;
 
     private ArrayList<Image> mImageList;
     private int mMaxImages;
+    private View.OnClickListener mOnClickListener;
 
     public class ImageViewHolder extends RecyclerView.ViewHolder {
 
@@ -38,21 +39,24 @@ public class ImageRecyclerViewAdapter extends RecyclerView.Adapter<ImageRecycler
 
             super(itemView);
 
+            itemView.setOnClickListener(ImageGridRecyclerViewAdapter.this.mOnClickListener);
+
             mImage = (SimpleDraweeView) itemView.findViewById(R.id.image);
             mOverFlowText = (TextView) itemView.findViewById(R.id.overflow_text);
         }
     }
 
-    public ImageRecyclerViewAdapter(int maxImages) {
+    public ImageGridRecyclerViewAdapter(View.OnClickListener onClickListener, int maxImages) {
 
         mImageList = new ArrayList<>();
         mMaxImages = maxImages;
+        mOnClickListener = onClickListener;
     }
 
     @Override
     public ImageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
-        View layoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.image_layout, parent, false);
+        View layoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.image_grid_layout, parent, false);
         ImageViewHolder imageViewHolder = new ImageViewHolder(layoutView);
 
         return imageViewHolder;

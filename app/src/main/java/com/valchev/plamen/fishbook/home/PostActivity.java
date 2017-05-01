@@ -3,11 +3,9 @@ package com.valchev.plamen.fishbook.home;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -29,17 +27,17 @@ import com.valchev.plamen.fishbook.models.Image;
 import com.valchev.plamen.fishbook.models.ProfilePicture;
 import com.valchev.plamen.fishbook.models.User;
 
-import org.geonames.PostalCode;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class PostActivity extends AppCompatActivity {
+public class PostActivity extends AppCompatActivity implements View.OnClickListener {
 
     private final static int REQUEST_CODE_PHOTOS = 2000;
+    private final static int REQUEST_CODE_PREVIEW_IMAGES = 2001;
 
     private final static String KEY_ORIGIN_IMAGES = "ORIGIN_IMAGES";
+    private final static String KEY_IMAGE_LIST = "IMAGE_LIST";
 
     protected FishbookUser mFishbookUser;
     protected SimpleDraweeView mProfilePicture;
@@ -48,13 +46,13 @@ public class PostActivity extends AppCompatActivity {
     protected LinearLayout mRecyclerViewLayout;
     protected RecyclerView mMainRecyclerView;
     protected RecyclerView mSubRecyclerView;
-    protected ImageRecyclerViewAdapter mMainRecyclerViewAdapter;
-    protected ImageRecyclerViewAdapter mSubRecyclerViewAdapter;
+    protected ImageGridRecyclerViewAdapter mMainRecyclerViewAdapter;
+    protected ImageGridRecyclerViewAdapter mSubRecyclerViewAdapter;
     protected StaggeredGridLayoutManager mMainStaggeredGridLayoutManager;
     protected StaggeredGridLayoutManager mSubStaggeredGridLayoutManager;
     protected SpaceNavigationView mSpaceNavigationView;
     protected ArrayList<com.nguyenhoanglam.imagepicker.model.Image> mOriginImages;
-
+    protected ArrayList<Image> mImageList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,12 +76,14 @@ public class PostActivity extends AppCompatActivity {
         initRecyclerView();
 
         mOriginImages = new ArrayList<>();
+        mImageList = new ArrayList<>();
 
         if( savedInstanceState != null ) {
 
             mOriginImages = savedInstanceState.getParcelableArrayList(KEY_ORIGIN_IMAGES);
+            mImageList = (ArrayList<Image>) savedInstanceState.getSerializable(KEY_IMAGE_LIST);
 
-            setSelectedImageListToRecyclerViews(mOriginImages);
+            setImageListToRecyclerViews(mImageList);
         }
     }
 
@@ -124,6 +124,19 @@ public class PostActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    protected void startImagesActivity() {
+
+        Intent intent = new Intent(PostActivity.this, ImagesActivity.class);
+        Bundle bundle = new Bundle();
+
+        bundle.putParcelableArrayList(KEY_ORIGIN_IMAGES, mOriginImages);
+        bundle.putSerializable(KEY_IMAGE_LIST, mImageList);
+
+        intent.putExtras(bundle);
+
+        startActivityForResult(intent, REQUEST_CODE_PREVIEW_IMAGES);
     }
 
     protected void loadUserInBackground() {
@@ -168,12 +181,13 @@ public class PostActivity extends AppCompatActivity {
         mSpaceNavigationView.onSaveInstanceState(outState);
 
         outState.putParcelableArrayList(KEY_ORIGIN_IMAGES, mOriginImages);
+        outState.putSerializable(KEY_IMAGE_LIST, mImageList);
     }
 
     protected void initRecyclerView() {
 
-        mMainRecyclerViewAdapter = new ImageRecyclerViewAdapter(ImageRecyclerViewAdapter.INFINITY);
-        mSubRecyclerViewAdapter = new ImageRecyclerViewAdapter(3);
+        mMainRecyclerViewAdapter = new ImageGridRecyclerViewAdapter(this, ImageGridRecyclerViewAdapter.INFINITY);
+        mSubRecyclerViewAdapter = new ImageGridRecyclerViewAdapter(this, 3);
         mMainStaggeredGridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
         mSubStaggeredGridLayoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.HORIZONTAL);
 
@@ -181,75 +195,90 @@ public class PostActivity extends AppCompatActivity {
         mSubRecyclerView.setLayoutManager(mSubStaggeredGridLayoutManager);
         mMainRecyclerView.setAdapter(mMainRecyclerViewAdapter);
         mSubRecyclerView.setAdapter(mSubRecyclerViewAdapter);
+        mMainRecyclerView.setOnClickListener(this);
+        mSubRecyclerView.setOnClickListener(this);
     }
 
     protected void setImageListToRecyclerViews(ArrayList<Image> imageArrayList) {
 
-        String description = mDescription.getText().toString();
+        mImageList = imageArrayList;
+
+        int hint = R.string.hint_whats_on_your_mind;
 
         if( imageArrayList == null ) {
 
             mMainRecyclerViewAdapter.setImageList(null);
             mSubRecyclerViewAdapter.setImageList(null);
 
-            if( description == null || description.isEmpty() ) {
-
-                mDescription.setHint(R.string.hint_whats_on_your_mind);
-            }
-
         } else {
 
             int size = imageArrayList.size();
 
-            if( size == 1 ) {
+            ArrayList<Image> mainImageArrayList = new ArrayList<>();
+            ArrayList<Image> subImageArrayList = null;
 
-                mMainRecyclerViewAdapter.setImageList(imageArrayList);
-                mSubRecyclerViewAdapter.setImageList(null);
-                mSubRecyclerView.setVisibility(View.GONE);
+            mainImageArrayList.add(imageArrayList.get(0));
 
-            } else {
+            int subRecyclerViewIndex = 1;
+            int mainStaggeredGridLayoutManagerOrientation = StaggeredGridLayoutManager.VERTICAL;
 
-                ArrayList<Image> mainImageArrayList = new ArrayList<>();
-                ArrayList<Image> subImageArrayList = null;
+            if( size > 1 && size < 4 ) {
 
-                mainImageArrayList.add(imageArrayList.get(0));
+                mainImageArrayList.add(imageArrayList.get(1));
 
-                int subRecyclerViewIndex = 1;
-                int mainStaggeredGridLayoutManagerOrientation = StaggeredGridLayoutManager.VERTICAL;
-
-                if( size < 4 ) {
-
-                    mainImageArrayList.add(imageArrayList.get(1));
-
-                    subRecyclerViewIndex = 2;
-                    mainStaggeredGridLayoutManagerOrientation = StaggeredGridLayoutManager.HORIZONTAL;
-                }
-
-                mMainStaggeredGridLayoutManager.setOrientation(mainStaggeredGridLayoutManagerOrientation);
-                mMainRecyclerViewAdapter.setImageList(mainImageArrayList);
-
-                for( int index = subRecyclerViewIndex; index < size; index++ ) {
-
-                    if( subImageArrayList == null ) {
-
-                        subImageArrayList = new ArrayList<>();
-                    }
-
-                    subImageArrayList.add(imageArrayList.get(index));
-                }
-
-                mSubRecyclerViewAdapter.setImageList(subImageArrayList);
-                mSubRecyclerView.setVisibility( subImageArrayList != null ? View.VISIBLE : View.GONE);
+                subRecyclerViewIndex = 2;
+                mainStaggeredGridLayoutManagerOrientation = StaggeredGridLayoutManager.HORIZONTAL;
             }
 
-            if( description == null || description.isEmpty() ) {
+            mMainStaggeredGridLayoutManager.setOrientation(mainStaggeredGridLayoutManagerOrientation);
+            mMainRecyclerViewAdapter.setImageList(mainImageArrayList);
 
-                mDescription.setHint(R.string.hint_say_something_about_these_photos);
+            for( int index = subRecyclerViewIndex; index < size; index++ ) {
+
+                if( subImageArrayList == null ) {
+
+                    subImageArrayList = new ArrayList<>();
+                }
+
+                subImageArrayList.add(imageArrayList.get(index));
             }
+
+            mSubRecyclerViewAdapter.setImageList(subImageArrayList);
+            mSubRecyclerView.setVisibility(subImageArrayList != null ? View.VISIBLE : View.GONE);
+
+            hint = size > 1 ? R.string.hint_say_something_about_these_photos : R.string.hint_say_something_about_this_photo;
+        }
+
+        String description = mDescription.getText().toString();
+
+        if( description == null || description.isEmpty() ) {
+
+            mDescription.setHint(hint);
         }
     }
 
     protected void setSelectedImageListToRecyclerViews(ArrayList<com.nguyenhoanglam.imagepicker.model.Image> imageArrayList) {
+
+        ArrayList<Image> imageModelArrayList = new ArrayList<>();
+
+        imageModelArrayList.addAll(mImageList);
+
+        if( imageModelArrayList == null )
+            imageModelArrayList = new ArrayList<>();
+
+        for (com.nguyenhoanglam.imagepicker.model.Image image : mOriginImages) {
+
+            File file = new File(image.getPath());
+            Uri uri = Uri.fromFile(file);
+            String uriString = uri.toString();
+            Image imageOriginModel = new Image(uriString, uriString);
+            int index = imageModelArrayList.indexOf(imageOriginModel);
+
+            if( index >= 0 ) {
+
+                imageModelArrayList.remove(index);
+            }
+        }
 
         if (imageArrayList != null) {
 
@@ -260,19 +289,19 @@ public class PostActivity extends AppCompatActivity {
             mOriginImages = new ArrayList<>();
         }
 
-        ArrayList<Image> imageModelArrayList = null;
-
         for (com.nguyenhoanglam.imagepicker.model.Image image : mOriginImages) {
-
-            if( imageModelArrayList == null ) {
-
-                imageModelArrayList = new ArrayList<>();
-            }
 
             File file = new File(image.getPath());
             Uri uri = Uri.fromFile(file);
             String uriString = uri.toString();
             Image imageModel = new Image(uriString, uriString);
+
+            int indexOf = mImageList.indexOf(imageModel);
+
+            if( indexOf >= 0 ) {
+
+                imageModel = mImageList.get(indexOf);
+            }
 
             imageModelArrayList.add(imageModel);
         }
@@ -295,6 +324,17 @@ public class PostActivity extends AppCompatActivity {
                 }
                 break;
 
+                case REQUEST_CODE_PREVIEW_IMAGES: {
+
+                    Bundle bundle = data.getExtras();
+
+                    mOriginImages = bundle.getParcelableArrayList(KEY_ORIGIN_IMAGES);
+                    mImageList = (ArrayList<Image>) bundle.getSerializable(KEY_IMAGE_LIST);
+
+                    setImageListToRecyclerViews(mImageList);
+                }
+                break;
+
                 default:
                     break;
             }
@@ -303,4 +343,9 @@ public class PostActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+    @Override
+    public void onClick(View v) {
+
+        startImagesActivity();
+    }
 }

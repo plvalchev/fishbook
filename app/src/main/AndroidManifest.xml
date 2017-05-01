@@ -25,21 +25,24 @@
         </activity>
         <activity
             android:name=".home.HomeActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".home.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".home.SettingsActivity"
             android:label="Settings"
             android:parentActivityName=".home.MainActivity"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"/>
         <activity
             android:name=".home.PostActivity"
             android:label="@string/title_activity_post"
             android:parentActivityName=".home.MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".home.ImagesActivity"></activity>
+        <activity
+            android:name=".home.ImagesActivity"
+            android:parentActivityName=".home.PostActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>

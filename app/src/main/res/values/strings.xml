@@ -34,6 +34,8 @@
     <string name="title_activity_post">Post to Fishbook</string>
     <string name="hint_whats_on_your_mind">What\'s on your mind?</string>
     <string name="hint_say_something_about_these_photos">Say something about these photos...</string>
+    <string name="hint_say_something_about_this_photo">Say something about this photo...</string>
+    <string name="hint_add_caption">Add a caption...</string>
 
 
 </resources>
