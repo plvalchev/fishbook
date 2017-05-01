@@ -12,6 +12,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -109,6 +111,7 @@ public class FishbookUser implements ValueEventListener {
     public void saveUserData() {
 
         DatabaseReference userDatabaseReference = getUserDatabaseReference();
+
         userDatabaseReference.setValue(mUserData);
     }
 
@@ -134,8 +137,7 @@ public class FishbookUser implements ValueEventListener {
 
                 mUserData.coverPhotos.add(0, coverPhoto);
 
-                DatabaseReference userDatabaseReference = getUserDatabaseReference();
-                userDatabaseReference.setValue(mUserData);
+                saveUserData();
             }
         });
 
@@ -168,8 +170,7 @@ public class FishbookUser implements ValueEventListener {
 
                 mUserData.profilePictures.add(0, profilePicture);
 
-                DatabaseReference userDatabaseReference = getUserDatabaseReference();
-                userDatabaseReference.setValue(mUserData);
+                saveUserData();
             }
         });
 

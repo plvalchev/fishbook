@@ -8,7 +8,11 @@ import com.nguyenhoanglam.imagepicker.model.Image;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.OutputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 import id.zelory.compressor.Compressor;
 
@@ -50,4 +54,35 @@ public class FishbookUtils {
                 .compressToBitmap(file);
     }
 
+    public static Date stringToDate(String date) {
+
+        Calendar calendar = Calendar.getInstance();
+        Date result = calendar.getTime();
+
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy");
+
+        try {
+
+            if( date != null ) {
+
+                result = simpleDateFormat.parse(date);
+            }
+
+        } catch (ParseException e) {
+
+        }
+
+        return result;
+    }
+
+    public static String dateToString(Date date) {
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy");
+
+        return simpleDateFormat.format(date);
+    }
 }

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="species">
+        <item>Carp</item>
+        <item>Grass Carp</item>
+        <item>Big Head Carp</item>
+        <item>Silver Carp</item>
+        <item>Small Mouth Buffalo</item>
+        <item>Bream</item>
+        <item>Catfish</item>
+        <item>Pike</item>
+        <item>Walleye</item>
+        <item>Rainbow trout</item>
+        <item>Brown trout</item>
+        <item>Garfish</item>
+        <item>Smallmouth Bass</item>
+        <item>Largemouth Bass</item>
+        <item>Sunfish</item>
+        <item>White Perch</item>
+        <item>Yellow Perch</item>
+    </string-array>
+
+    <string-array name="regions">
+        <item>Blagoevgrad</item>
+        <item>Burgas</item>
+        <item>Varna</item>
+        <item>Veliko Tarnovo</item>
+        <item>Vidin</item>
+        <item>Vratsa</item>
+        <item>Gabrovo</item>
+        <item>Dobrich</item>
+        <item>Kardzhali</item>
+        <item>Kyustendil</item>
+        <item>Lovech</item>
+        <item>Montana</item>
+        <item>Pazardzhik</item>
+        <item>Pernik</item>
+        <item>Pleven</item>
+        <item>Plovdiv</item>
+        <item>Razgrad</item>
+        <item>Ruse</item>
+        <item>Silistra</item>
+        <item>Sliven</item>
+        <item>Smolyan</item>
+        <item>Sofia</item>
+        <item>Stara Zagora</item>
+        <item>Targovishte</item>
+        <item>Haskovo</item>
+        <item>Shumen</item>
+        <item>Yambol</item>
+
+    </string-array>
+
+    <string-array name="fishing_methods">
+        <item>Carp fishing</item>
+        <item>Sea fishing</item>
+        <item>Fly fishing</item>
+        <item>Coarse</item>
+        <item>Match</item>
+        <item>Predator</item>
+        <item>Spinning</item>
+    </string-array>
+
+</resources>

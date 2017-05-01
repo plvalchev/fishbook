@@ -1,15 +1,5 @@
 <resources>
 
-    <!-- Font Icons -->
-    <string name="news_feed_icon">&#xf24a;</string>
-    <string name="news_feed_pressed_icon">&#xf249;</string>
-    <string name="friends_icon">&#xf2ba;</string>
-    <string name="friends_pressed_icon">&#xf2b9;</string>
-    <string name="notifications_icon">&#xf0a2;</string>
-    <string name="notifications_pressed_icon">&#xf0f3;</string>
-    <string name="edit_profile_icon">&#xf2c0;</string>
-    <string name="edit_profile_pressed_icon">&#xf007;</string>
-
     <string name="app_name">Fishbook</string>
     <string name="sign_in">Sign in</string>
     <string name="sign_up">Sign up</string>
@@ -38,7 +28,12 @@
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
     <string name="error_sign_up">Sign up failed.</string>
-    <string name="title_activity_main">MainActivity</string>
     <string name="action_settings">Settings</string>
+    <string name="female">Female</string>
+    <string name="male">Male</string>
+    <string name="title_activity_post">Post to Fishbook</string>
+    <string name="hint_whats_on_your_mind">What\'s on your mind?</string>
+    <string name="hint_say_something_about_these_photos">Say something about these photos...</string>
+
 
 </resources>

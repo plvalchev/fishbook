@@ -14,7 +14,20 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
     @Override
     public Fragment getItem(int arg0) {
 
-        return new EditProfileFragment();
+        Fragment fragment = null;
+
+        switch (arg0) {
+
+            case 0:
+                fragment = new FeedFragment();
+                break;
+
+            default:
+                fragment = new EditProfileFragment();
+                break;
+        }
+
+        return fragment;
     }
 
     @Override

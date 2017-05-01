@@ -15,8 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".home.HomeActivity"
-            android:screenOrientation="portrait">
+            android:name=".home.SplashScreen"
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -24,15 +24,22 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".home.HomeActivity"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".home.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".home.SettingsActivity"
-            android:theme="@style/AppTheme"
             android:label="Settings"
-            android:parentActivityName=".home.MainActivity">
-        </activity>
+            android:parentActivityName=".home.MainActivity"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".home.PostActivity"
+            android:label="@string/title_activity_post"
+            android:parentActivityName=".home.MainActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".home.ImagesActivity"></activity>
     </application>
 
 </manifest>

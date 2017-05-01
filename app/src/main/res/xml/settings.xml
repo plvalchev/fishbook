@@ -12,6 +12,42 @@
             android:dialogTitle="Display Name"
             android:textColor="@android:color/black"/>
 
+        <Preference
+            android:key="pref_birth_date"
+            android:title="Birth date"
+            android:summary="Unknown"/>
+
+        <SwitchPreference
+            android:key="pref_gender"
+            android:title="Gender"
+            android:defaultValue="false"
+            android:summaryOn="@string/female"
+            android:summaryOff="@string/male" />
+
+        <MultiSelectListPreference
+            android:key="pref_most_chased_species"
+            android:title="Most chased species"
+            android:dialogTitle="Select species"
+            android:summary="Unknown"
+            android:entries="@array/species"
+            android:entryValues="@array/species"/>
+
+        <MultiSelectListPreference
+            android:key="pref_top_fishing_regions"
+            android:title="Top fishing regions"
+            android:dialogTitle="Select regions"
+            android:summary="Unknown"
+            android:entries="@array/regions"
+            android:entryValues="@array/regions"/>
+
+        <MultiSelectListPreference
+            android:key="pref_fishing_methods"
+            android:title="Fishing methods"
+            android:dialogTitle="Select fishing methods"
+            android:summary="Unknown"
+            android:entries="@array/fishing_methods"
+            android:entryValues="@array/fishing_methods"/>
+
     </PreferenceCategory>
 
 

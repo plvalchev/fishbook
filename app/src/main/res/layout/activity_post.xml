@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context="com.valchev.plamen.fishbook.home.PostActivity">
+
+    <include layout="@layout/content_post" />
+
+    <com.luseen.spacenavigation.SpaceNavigationView
+        android:id="@+id/space"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_anchor="@+id/nested_scroll_view"
+        app:layout_anchorGravity="bottom"
+        app:inactive_item_color="@color/white"
+        app:centre_button_icon="@drawable/ic_camera_white"
+        app:centre_button_color="@android:color/white"/>
+
+</android.support.design.widget.CoordinatorLayout>
