@@ -36,6 +36,9 @@
     <string name="hint_say_something_about_these_photos">Say something about these photos...</string>
     <string name="hint_say_something_about_this_photo">Say something about this photo...</string>
     <string name="hint_add_caption">Add a caption...</string>
+    <string name="where_did_you_catch_this">Where did you catch this?</string>
+    <string name="what_are_the_species">What are the species on this photos?</string>
+    <string name="how_do_you_catch">How do you catch this?</string>
 
 
 </resources>

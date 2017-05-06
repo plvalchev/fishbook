@@ -10,9 +10,9 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:overScrollMode="never"
-        android:padding="16dp"/>
+        android:padding="16dp" />
 
     <com.luseen.spacenavigation.SpaceNavigationView
         android:id="@+id/space"

@@ -21,11 +21,6 @@ import com.valchev.plamen.fishbook.models.PersonalInformation;
 import com.valchev.plamen.fishbook.models.Specie;
 import com.valchev.plamen.fishbook.models.User;
 
-import org.geonames.Toponym;
-import org.geonames.ToponymSearchCriteria;
-import org.geonames.ToponymSearchResult;
-import org.geonames.WebService;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;

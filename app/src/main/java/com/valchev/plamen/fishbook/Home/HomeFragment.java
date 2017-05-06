@@ -30,7 +30,7 @@ public class HomeFragment extends Fragment {
             Context context = FishbookApplication.getContext();
             LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             View view = inflater.inflate(R.layout.fragment_home, null);
-            TextView textView	= (TextView)view.findViewById(R.id.fragment_home_text);
+            TextView textView = (TextView)view.findViewById(R.id.fragment_home_text);
 
             textView.setText(stringID);
 

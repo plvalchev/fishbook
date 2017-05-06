@@ -79,7 +79,7 @@ public class ImagesActivity extends AppCompatActivity {
     protected void initRecyclerView() {
 
         mLinearLayoutManager = new LinearLayoutManager(this);
-        mImageLinearRecyclerViewAdapter = new ImageLinearRecyclerViewAdapter(mImageList);
+        mImageLinearRecyclerViewAdapter = new ImageLinearRecyclerViewAdapter(mOriginImages, mImageList);
 
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
         mRecyclerView.setAdapter(mImageLinearRecyclerViewAdapter);
@@ -189,7 +189,7 @@ public class ImagesActivity extends AppCompatActivity {
         }
 
         mImageList = imageModelArrayList;
-        mImageLinearRecyclerViewAdapter.setImageList(mImageList);
+        mImageLinearRecyclerViewAdapter.setImageList(mOriginImages, mImageList);
     }
 
     @Override

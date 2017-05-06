@@ -8,6 +8,8 @@
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:padding="16dp"
+    android:layout_weight="1"
+    android:overScrollMode="never"
     tools:context="com.valchev.plamen.fishbook.home.PostActivity"
     tools:showIn="@layout/activity_post">
 
@@ -45,13 +47,44 @@
         <EditText
             android:id="@+id/post_description"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
+            android:minLines="1"
             android:hint="@string/hint_whats_on_your_mind"
-            android:minLines="2"/>
+            android:background="@android:color/transparent"/>
+
+        <com.pchmn.materialchips.ChipsInput
+            android:id="@+id/fishing_chips_input"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:visibility="gone"
+            app:maxRows="1"
+            app:hint="@string/where_did_you_catch_this"
+            app:chip_deletable="true"
+            app:showChipDetailed="false"/>
+
+        <com.pchmn.materialchips.ChipsInput
+            android:id="@+id/species_chips_input"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:visibility="gone"
+            app:maxRows="1"
+            app:hint="@string/what_are_the_species"
+            app:chip_deletable="true"
+            app:showChipDetailed="false"/>
+
+        <com.pchmn.materialchips.ChipsInput
+            android:id="@+id/method_chips_input"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:visibility="gone"
+            app:maxRows="1"
+            app:hint="@string/how_do_you_catch"
+            app:chip_deletable="true"
+            app:showChipDetailed="false"/>
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="320dp"
+            android:layout_height="300dp"
             android:id="@+id/recycler_view_layout"
             android:orientation="horizontal">
 
@@ -80,6 +113,5 @@
             android:layout_marginTop="48dp"/>
 
     </LinearLayout>
-
 
 </android.support.v4.widget.NestedScrollView>

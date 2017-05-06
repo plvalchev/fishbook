@@ -7,12 +7,12 @@
     android:fitsSystemWindows="true"
     tools:context="com.valchev.plamen.fishbook.home.PostActivity">
 
-    <include layout="@layout/content_post" />
+    <include layout="@layout/content_post"/>
 
     <com.luseen.spacenavigation.SpaceNavigationView
         android:id="@+id/space"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         app:inactive_item_color="@color/white"
         app:centre_button_icon="@drawable/ic_camera_white"

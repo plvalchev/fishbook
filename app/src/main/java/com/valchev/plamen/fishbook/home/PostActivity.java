@@ -21,6 +21,9 @@ import com.luseen.spacenavigation.SpaceNavigationView;
 import com.luseen.spacenavigation.SpaceOnClickListener;
 import com.nguyenhoanglam.imagepicker.activity.ImagePicker;
 import com.nguyenhoanglam.imagepicker.activity.ImagePickerActivity;
+import com.pchmn.materialchips.ChipsInput;
+import com.pchmn.materialchips.model.Chip;
+import com.pchmn.materialchips.model.ChipInterface;
 import com.valchev.plamen.fishbook.R;
 import com.valchev.plamen.fishbook.global.FishbookUser;
 import com.valchev.plamen.fishbook.models.Image;
@@ -29,7 +32,7 @@ import com.valchev.plamen.fishbook.models.User;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
 
 public class PostActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -38,6 +41,9 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
 
     private final static String KEY_ORIGIN_IMAGES = "ORIGIN_IMAGES";
     private final static String KEY_IMAGE_LIST = "IMAGE_LIST";
+    private final static String KEY_SELECTED_REGION_CHIPS = "SELECTED_REGION_CHIPS";
+    private final static String KEY_SELECTED_METHOD_CHIPS = "SELECTED_METHOD_CHIPS";
+    private final static String KEY_SELECTED_SPECIE_CHIPS = "SELECTED_SPECIE_CHIPS";
 
     protected FishbookUser mFishbookUser;
     protected SimpleDraweeView mProfilePicture;
@@ -53,6 +59,9 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
     protected SpaceNavigationView mSpaceNavigationView;
     protected ArrayList<com.nguyenhoanglam.imagepicker.model.Image> mOriginImages;
     protected ArrayList<Image> mImageList;
+    protected ChipsInput mFishingRegionChipsInput;
+    protected ChipsInput mSpeciesChipsInput;
+    protected ChipsInput mFishingMethodChipsInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +76,11 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
         mMainRecyclerView = (RecyclerView)findViewById(R.id.main_recycler_view);
         mSubRecyclerView = (RecyclerView)findViewById(R.id.sub_recycler_view);
         mSpaceNavigationView = (SpaceNavigationView) findViewById(R.id.space);
+        mFishingRegionChipsInput = (ChipsInput) findViewById(R.id.fishing_chips_input);
+        mSpeciesChipsInput = (ChipsInput) findViewById(R.id.species_chips_input);
+        mFishingMethodChipsInput = (ChipsInput) findViewById(R.id.method_chips_input);
+
+        initChipsFilterableLists();
 
         mSpaceNavigationView.initWithSaveInstanceState(savedInstanceState);
 
@@ -84,7 +98,36 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
             mImageList = (ArrayList<Image>) savedInstanceState.getSerializable(KEY_IMAGE_LIST);
 
             setImageListToRecyclerViews(mImageList);
+
+            restoreChipsState(savedInstanceState, mFishingRegionChipsInput, KEY_SELECTED_REGION_CHIPS);
+            restoreChipsState(savedInstanceState, mFishingMethodChipsInput, KEY_SELECTED_METHOD_CHIPS);
+            restoreChipsState(savedInstanceState, mSpeciesChipsInput, KEY_SELECTED_SPECIE_CHIPS);
         }
+    }
+
+    protected void initChipsFilterableLists() {
+
+        initChipFilterableList(mSpeciesChipsInput, R.array.species);
+        initChipFilterableList(mFishingRegionChipsInput, R.array.regions);
+        initChipFilterableList(mFishingMethodChipsInput, R.array.fishing_methods);
+    }
+
+    protected void initChipFilterableList(ChipsInput chipsInput, int arrayResource) {
+
+        CharSequence[] strings = getResources().getTextArray(arrayResource);
+        ArrayList<Chip> chipArrayList = new ArrayList<>();
+
+        if( strings != null ) {
+
+            for(int index = 0; index < strings.length; index++ ) {
+
+                CharSequence charSequence = strings[index];
+
+                chipArrayList.add(new Chip(charSequence.toString(), null));
+            }
+        }
+
+        chipsInput.setFilterableList(chipArrayList);
     }
 
     protected void initSpaceNavigationView() {
@@ -177,12 +220,56 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+
         super.onSaveInstanceState(outState);
         mSpaceNavigationView.onSaveInstanceState(outState);
 
         outState.putParcelableArrayList(KEY_ORIGIN_IMAGES, mOriginImages);
         outState.putSerializable(KEY_IMAGE_LIST, mImageList);
+
+        saveChipsState(outState, mFishingRegionChipsInput, KEY_SELECTED_REGION_CHIPS);
+        saveChipsState(outState, mFishingMethodChipsInput, KEY_SELECTED_METHOD_CHIPS);
+        saveChipsState(outState, mSpeciesChipsInput, KEY_SELECTED_SPECIE_CHIPS);
     }
+
+    protected void restoreChipsState(Bundle savedInstanceState, ChipsInput chipsInput, String key) {
+
+        ArrayList<String> selectedChipStringList = savedInstanceState.getStringArrayList(key);
+
+        if( selectedChipStringList != null ) {
+
+            for (String chip: selectedChipStringList) {
+
+                chipsInput.addChip( new Chip(chip, null) );
+            }
+        }
+    }
+
+    protected void saveChipsState(Bundle outState, ChipsInput chipsInput, String key) {
+
+        List<? extends ChipInterface> selectedChipList = chipsInput.getSelectedChipList();
+
+        if( selectedChipList != null ) {
+
+            ArrayList<String> selectedChipStringList = null;
+
+            for (ChipInterface chipInterface: selectedChipList) {
+
+                if( selectedChipStringList == null ) {
+
+                    selectedChipStringList = new ArrayList<>();
+                }
+
+                selectedChipStringList.add(chipInterface.getLabel());
+            }
+
+            if( selectedChipStringList != null ) {
+
+                outState.putStringArrayList(key, selectedChipStringList);
+            }
+        }
+    }
+
 
     protected void initRecyclerView() {
 
@@ -205,12 +292,22 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
 
         int hint = R.string.hint_whats_on_your_mind;
 
-        if( imageArrayList == null ) {
+        if( imageArrayList == null || imageArrayList.size() == 0 ) {
 
             mMainRecyclerViewAdapter.setImageList(null);
             mSubRecyclerViewAdapter.setImageList(null);
 
+            mFishingRegionChipsInput.setVisibility(View.GONE);
+            mFishingMethodChipsInput.setVisibility(View.GONE);
+            mSpeciesChipsInput.setVisibility(View.GONE);
+
         } else {
+
+            mFishingRegionChipsInput.setVisibility(View.VISIBLE);
+            mFishingMethodChipsInput.setVisibility(View.VISIBLE);
+            mSpeciesChipsInput.setVisibility(View.VISIBLE);
+
+            mDescription.requestFocus();
 
             int size = imageArrayList.size();
 

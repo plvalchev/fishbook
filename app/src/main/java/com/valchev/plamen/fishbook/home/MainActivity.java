@@ -17,7 +17,6 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.ms.square.android.expandabletextview.ExpandableTextView;
-import com.shamanland.fonticon.FontIconView;
 import com.stfalcon.frescoimageviewer.ImageViewer;
 import com.valchev.plamen.fishbook.R;
 

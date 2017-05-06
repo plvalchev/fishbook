@@ -14,9 +14,6 @@ public class Image implements Serializable {
     public String caption;
     public String lowResUri;
     public String highResUri;
-    public ArrayList<FishingRegion> fishingRegion;
-    public ArrayList<Specie> species;
-    public ArrayList<FishingMethod> fishingMethod;
 
     public Image() {
 

@@ -21,6 +21,17 @@
             app:roundingBorderColor="@android:color/white"
             app:backgroundImage="@android:color/white"/>
 
+        <ImageButton
+            android:id="@+id/delete_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_margin="8dp"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_menu_delete"
+            android:visibility="gone"/>
+
         <TextView
             android:id="@+id/overflow_text"
             android:layout_width="match_parent"
