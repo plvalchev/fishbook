@@ -2,11 +2,10 @@ package com.valchev.plamen.fishbook.home;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.support.v7.view.menu.MenuBuilder;
-import android.support.v7.view.menu.MenuPopupHelper;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,7 +16,6 @@ import android.widget.TextView;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.interfaces.DraweeController;
-import com.facebook.drawee.view.MultiDraweeHolder;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.google.firebase.database.DatabaseError;
@@ -27,10 +25,9 @@ import com.nguyenhoanglam.imagepicker.activity.ImagePickerActivity;
 import com.nguyenhoanglam.imagepicker.model.Image;
 import com.valchev.plamen.fishbook.R;
 import com.valchev.plamen.fishbook.global.FishbookUser;
-import com.valchev.plamen.fishbook.models.CoverPhoto;
-import com.valchev.plamen.fishbook.models.ProfilePicture;
 import com.valchev.plamen.fishbook.models.User;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import static android.app.Activity.RESULT_OK;
@@ -136,12 +133,12 @@ public class EditProfileFragment extends Fragment {
 
             for( int index = 0; index < mUserData.profilePictures.size(); index++ ) {
 
-                ProfilePicture profilePicture = mUserData.profilePictures.get(index);
+                com.valchev.plamen.fishbook.models.Image profilePicture = mUserData.profilePictures.get(index);
 
                 mProfilePictures.add(profilePicture.highResUri);
             }
 
-            ProfilePicture actualProfilePicture = mUserData.profilePictures.get(0);
+            com.valchev.plamen.fishbook.models.Image actualProfilePicture = mUserData.profilePictures.get(0);
 
             DraweeController controller = Fresco.newDraweeControllerBuilder()
                     .setLowResImageRequest(ImageRequest.fromUri(actualProfilePicture.lowResUri))
@@ -169,12 +166,12 @@ public class EditProfileFragment extends Fragment {
 
             for( int index = 0; index < mUserData.coverPhotos.size(); index++ ) {
 
-                CoverPhoto coverPhoto = mUserData.coverPhotos.get(index);
+                com.valchev.plamen.fishbook.models.Image coverPhoto = mUserData.coverPhotos.get(index);
 
                 mCoverPhotos.add(coverPhoto.highResUri);
             }
 
-            CoverPhoto actualCoverPhoto = mUserData.coverPhotos.get(0);
+            com.valchev.plamen.fishbook.models.Image actualCoverPhoto = mUserData.coverPhotos.get(0);
 
             DraweeController controller = Fresco.newDraweeControllerBuilder()
                     .setLowResImageRequest(ImageRequest.fromUri(actualCoverPhoto.lowResUri))
@@ -305,13 +302,11 @@ public class EditProfileFragment extends Fragment {
             switch ( requestCode ) {
 
                 case REQUEST_CODE_PROFILE_PICTURE_PICKER:
-                    mFishbookUser.setProfilePicture(getFirstSelectedImage(data));
-                    mProgressBar.setVisibility(View.VISIBLE);
+                    setProfilePicture(getFirstSelectedImage(data));
                     break;
 
                 case REQUEST_CODE_COVER_PHOTO_PICKER:
-                    mFishbookUser.setCoverPhoto(getFirstSelectedImage(data));
-                    mProgressBar.setVisibility(View.VISIBLE);
+                    setCoverPhoto(getFirstSelectedImage(data));
                     break;
 
                 default:
@@ -320,5 +315,29 @@ public class EditProfileFragment extends Fragment {
         }
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    protected void setProfilePicture(Image profilePicture) {
+
+        File file = new File(profilePicture.getPath());
+        Uri uri = Uri.fromFile(file);
+        String uriString = uri.toString();
+        com.valchev.plamen.fishbook.models.Image imageModel =
+                new com.valchev.plamen.fishbook.models.Image(uriString, uriString, profilePicture.getPath());
+
+        mFishbookUser.setProfilePicture(imageModel);
+        mProgressBar.setVisibility(View.VISIBLE);
+    }
+
+    protected void setCoverPhoto(Image coverPhoto) {
+
+        File file = new File(coverPhoto.getPath());
+        Uri uri = Uri.fromFile(file);
+        String uriString = uri.toString();
+        com.valchev.plamen.fishbook.models.Image imageModel =
+                new com.valchev.plamen.fishbook.models.Image(uriString, uriString, coverPhoto.getPath());
+
+        mFishbookUser.setCoverPhoto(imageModel);
+        mProgressBar.setVisibility(View.VISIBLE);
     }
 }

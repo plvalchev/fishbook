@@ -1,10 +1,7 @@
 package com.valchev.plamen.fishbook.global;
 
-import android.graphics.Bitmap;
-import android.net.Uri;
 import android.support.annotation.NonNull;
 
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -12,32 +9,20 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.MutableData;
-import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
-import com.nguyenhoanglam.imagepicker.model.Image;
-import com.valchev.plamen.fishbook.models.CoverPhoto;
-import com.valchev.plamen.fishbook.models.FishingRegion;
-import com.valchev.plamen.fishbook.models.PersonalInformation;
-import com.valchev.plamen.fishbook.models.ProfilePicture;
+import com.valchev.plamen.fishbook.models.Image;
 import com.valchev.plamen.fishbook.models.User;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.UUID;
-
-import id.zelory.compressor.Compressor;
 
 /**
  * Created by admin on 9.4.2017 г..
  */
 
-public class FishbookUser implements ValueEventListener {
+public class FishbookUser implements ValueEventListener, OnSuccessListener<ArrayList<MultipleImageUploader.MultipleImage>> {
 
     public interface UserValueEventListener {
 
@@ -115,70 +100,64 @@ public class FishbookUser implements ValueEventListener {
         userDatabaseReference.setValue(mUserData);
     }
 
+    @Override
+    public void onSuccess(ArrayList<MultipleImageUploader.MultipleImage> images) {
+
+        saveUserData();
+    }
+
     public void setCoverPhoto(Image newImage) {
 
-        String coverPhotoName = "cover_photo_" + UUID.randomUUID().toString();
-        StorageReference lowResCoverPhotosStorageReference = getLowResCoverPhotosStorageReference(coverPhotoName);
-        StorageReference highResCoverPhotosStorageReference = getHighResCoverPhotosStorageReference(coverPhotoName);
+        if (mUserData.coverPhotos == null) {
 
-        MultipleImagesUploader multipleImagesUploader = new MultipleImagesUploader();
-        multipleImagesUploader.addOnSuccessListener(new OnSuccessListener<ArrayList<com.valchev.plamen.fishbook.models.Image>>() {
+            mUserData.coverPhotos = new ArrayList<>();
+        }
 
-            @Override
-            public void onSuccess(ArrayList<com.valchev.plamen.fishbook.models.Image> images) {
+        mUserData.coverPhotos.remove(newImage);
+        mUserData.coverPhotos.add(0, newImage);
 
-                com.valchev.plamen.fishbook.models.Image coverPhotoImage = images.get(0);
-                CoverPhoto coverPhoto = new CoverPhoto(coverPhotoImage.lowResUri, coverPhotoImage.highResUri);
+        if( !newImage.isUploaded() ) {
 
-                if( mUserData.coverPhotos == null ) {
+            String coverPhotoName = "cover_photo_" + UUID.randomUUID().toString();
+            StorageReference lowResCoverPhotosStorageReference = getLowResCoverPhotosStorageReference(coverPhotoName);
+            StorageReference highResCoverPhotosStorageReference = getHighResCoverPhotosStorageReference(coverPhotoName);
+            MultipleImageUploader.MultipleImage multipleImage = new MultipleImageUploader.MultipleImage(newImage, lowResCoverPhotosStorageReference, highResCoverPhotosStorageReference);
+            MultipleImageUploader multipleImageUploader = new MultipleImageUploader(multipleImage);
 
-                    mUserData.coverPhotos = new ArrayList<>();
-                }
+            multipleImageUploader.addOnSuccessListener(this);
+            multipleImageUploader.uploadImages();
+        }
+        else {
 
-                mUserData.coverPhotos.add(0, coverPhoto);
-
-                saveUserData();
-            }
-        });
-
-        ArrayList<Image> images = new ArrayList<>();
-
-        images.add(newImage);
-
-        multipleImagesUploader.uploadImages(images, lowResCoverPhotosStorageReference, highResCoverPhotosStorageReference);
+            saveUserData();
+        }
     }
 
     public void setProfilePicture(Image newImage) {
 
-        String profilePictureName = "profile_picture" + UUID.randomUUID().toString();
-        StorageReference lowResProfilePictureStorageReference = getLowResProfilePicturesStorageReference(profilePictureName);
-        StorageReference highResProfilePictureStorageReference = getHighResProfilePicturesStorageReference(profilePictureName);
+        if( mUserData.profilePictures == null ) {
 
-        MultipleImagesUploader multipleImagesUploader = new MultipleImagesUploader();
-        multipleImagesUploader.addOnSuccessListener(new OnSuccessListener<ArrayList<com.valchev.plamen.fishbook.models.Image>>() {
+            mUserData.profilePictures = new ArrayList<>();
+        }
 
-            @Override
-            public void onSuccess(ArrayList<com.valchev.plamen.fishbook.models.Image> images) {
+        mUserData.profilePictures.remove(newImage);
+        mUserData.profilePictures.add(0, newImage);
 
-                com.valchev.plamen.fishbook.models.Image profilePictureImage = images.get(0);
-                ProfilePicture profilePicture = new ProfilePicture(profilePictureImage.lowResUri, profilePictureImage.highResUri);
+        if( !newImage.isUploaded() ) {
 
-                if( mUserData.profilePictures == null ) {
+            String profilePictureName = "profile_picture" + UUID.randomUUID().toString();
+            StorageReference lowResProfilePictureStorageReference = getLowResProfilePicturesStorageReference(profilePictureName);
+            StorageReference highResProfilePictureStorageReference = getHighResProfilePicturesStorageReference(profilePictureName);
+            MultipleImageUploader.MultipleImage multipleImage = new MultipleImageUploader.MultipleImage(newImage, lowResProfilePictureStorageReference, highResProfilePictureStorageReference);
+            MultipleImageUploader multipleImageUploader = new MultipleImageUploader(multipleImage);
 
-                    mUserData.profilePictures = new ArrayList<>();
-                }
+            multipleImageUploader.addOnSuccessListener(this);
+            multipleImageUploader.uploadImages();
+        }
+        else {
 
-                mUserData.profilePictures.add(0, profilePicture);
-
-                saveUserData();
-            }
-        });
-
-        ArrayList<Image> images = new ArrayList<>();
-
-        images.add(newImage);
-
-        multipleImagesUploader.uploadImages(images, lowResProfilePictureStorageReference, highResProfilePictureStorageReference);
+            saveUserData();
+        }
     }
 
     @Override
@@ -258,6 +237,13 @@ public class FishbookUser implements ValueEventListener {
     protected DatabaseReference getUserDatabaseReference() {
 
         DatabaseReference databaseReference = mDatabaseReference.child("user").child(getUid());
+
+        return databaseReference;
+    }
+
+    public static DatabaseReference getUserDatabaseReference(String uid) {
+
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("user").child(uid);
 
         return databaseReference;
     }

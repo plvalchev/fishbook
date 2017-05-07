@@ -4,19 +4,22 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.firebase.ui.database.FirebaseIndexRecyclerAdapter;
 import com.valchev.plamen.fishbook.R;
 
 /**
  * Created by admin on 29.4.2017 г..
  */
 
-public class FeedFragment extends Fragment implements  View.OnClickListener {
+public class FeedFragment extends Fragment {
 
-    FloatingActionButton mAddNewPostFAB;
+    protected RecyclerView mRecyclerView;
+    protected FeedRecyclerViewAdapter mFeedRecyclerViewAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -24,21 +27,19 @@ public class FeedFragment extends Fragment implements  View.OnClickListener {
 
         View view = inflater.inflate(R.layout.fragment_post, container, false);
 
-        mAddNewPostFAB = (FloatingActionButton) view.findViewById( R.id.add_new_post );
 
-        mAddNewPostFAB.setOnClickListener(this);
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.list);
+
+        mFeedRecyclerViewAdapter = new FeedRecyclerViewAdapter();
+        mRecyclerView.setAdapter(mFeedRecyclerViewAdapter);
 
         return view;
     }
 
     @Override
-    public void onClick(View v) {
+    public void onDestroy() {
 
-        if( v == mAddNewPostFAB ) {
-
-            Intent intent = new Intent(getActivity(), PostActivity.class);
-
-            getActivity().startActivity(intent);
-        }
+        super.onDestroy();
+        mFeedRecyclerViewAdapter.cleanup();
     }
 }

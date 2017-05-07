@@ -153,7 +153,7 @@ public class ImagesActivity extends AppCompatActivity {
             File file = new File(image.getPath());
             Uri uri = Uri.fromFile(file);
             String uriString = uri.toString();
-            Image imageOriginModel = new Image(uriString, uriString);
+            Image imageOriginModel = new Image(uriString, uriString, image.getPath());
             int index = imageModelArrayList.indexOf(imageOriginModel);
 
             if( index >= 0 ) {
@@ -176,7 +176,7 @@ public class ImagesActivity extends AppCompatActivity {
             File file = new File(image.getPath());
             Uri uri = Uri.fromFile(file);
             String uriString = uri.toString();
-            Image imageModel = new Image(uriString, uriString);
+            Image imageModel = new Image(uriString, uriString, image.getPath());
 
             int indexOf = mImageList.indexOf(imageModel);
 

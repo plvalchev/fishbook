@@ -14,14 +14,14 @@
 
         <com.facebook.drawee.view.SimpleDraweeView
             android:layout_width="match_parent"
-            android:layout_height="250dp"
+            android:layout_height="150dp"
             android:id="@+id/cover_photo"
             android:scaleType="centerCrop"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:layout_marginTop="200dp"
+            android:layout_marginTop="100dp"
             android:id="@+id/cover_photo_layout"
             android:background="@drawable/cover_photo_gradient"/>
 
@@ -36,7 +36,7 @@
                 android:layout_marginBottom="32dp"
                 android:layout_marginLeft="32dp"
                 android:layout_marginRight="32dp"
-                android:layout_marginTop="200dp"
+                android:layout_marginTop="100dp"
                 android:orientation="vertical"
                 android:elevation="4dp"
                 android:padding="8dp"
@@ -69,7 +69,7 @@
             <LinearLayout
                 android:layout_width="128dp"
                 android:layout_height="128dp"
-                android:layout_marginTop="150dp"
+                android:layout_marginTop="50dp"
                 android:layout_below="@id/layout_user_info"
                 android:layout_alignParentTop="true"
                 android:layout_centerHorizontal="true"

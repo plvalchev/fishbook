@@ -15,6 +15,9 @@ public class Image implements Serializable {
     public String lowResUri;
     public String highResUri;
 
+    @Exclude
+    public String path;
+
     public Image() {
 
     }
@@ -23,6 +26,19 @@ public class Image implements Serializable {
 
         this.lowResUri = lowResUri;
         this.highResUri = highResUri;
+    }
+
+    public Image(String lowResUri, String highResUri, String path) {
+
+        this.lowResUri = lowResUri;
+        this.highResUri = highResUri;
+        this.path = path;
+    }
+
+    @Exclude
+    public boolean isUploaded() {
+
+        return path == null || path.isEmpty();
     }
 
     @Exclude

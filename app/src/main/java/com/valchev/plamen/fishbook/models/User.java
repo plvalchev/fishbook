@@ -14,14 +14,14 @@ import java.util.ArrayList;
 public class User {
 
     public PersonalInformation personalInformation;
-    public ArrayList<CoverPhoto> coverPhotos;
-    public ArrayList<ProfilePicture> profilePictures;
+    public ArrayList<Image> coverPhotos;
+    public ArrayList<Image> profilePictures;
 
     public User() {
 
     }
 
-    public User(PersonalInformation personalInformation, ArrayList<CoverPhoto> coverPhotos, ArrayList<ProfilePicture> profilePictures) {
+    public User(PersonalInformation personalInformation, ArrayList<Image> coverPhotos, ArrayList<Image> profilePictures) {
         this.personalInformation = personalInformation;
         this.coverPhotos = coverPhotos;
         this.profilePictures = profilePictures;

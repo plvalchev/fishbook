@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     protected TabLayout mTabLayout;
     protected ArrayList<String> mImages;
     protected int mCurrentPosition = -1;
+    protected FloatingActionButton mAddNewPostFAB;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +51,17 @@ public class MainActivity extends AppCompatActivity {
         mSearchView = (SearchView) findViewById(R.id.search_view);
         mSearchViewHint = (TextView) findViewById(R.id.search_view_hint);
         mViewPager = (ViewPager) findViewById(R.id.navigation_view_pager);
+        mAddNewPostFAB = (FloatingActionButton) findViewById(R.id.add_new_post);
+
+        mAddNewPostFAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent = new Intent(MainActivity.this, PostActivity.class);
+
+                startActivity(intent);
+            }
+        });
 
         initViewPager();
         initSearchView();

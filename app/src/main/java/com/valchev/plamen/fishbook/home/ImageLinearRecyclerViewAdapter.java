@@ -29,9 +29,9 @@ import java.util.ArrayList;
  * Created by admin on 1.5.2017 г..
  */
 
-public class ImageLinearRecyclerViewAdapter extends RecyclerView.Adapter<ImageLinearRecyclerViewAdapter.ImageViewHolder> {
+public class ImageLinearRecyclerViewAdapter extends ImageRecyclerViewAdapter {
 
-    public class ImageViewHolder extends RecyclerView.ViewHolder {
+    public class ImageViewHolder extends ImageRecyclerViewAdapter.ImageViewHolder {
 
         public class CustomTextWatcher implements TextWatcher {
 
@@ -60,81 +60,25 @@ public class ImageLinearRecyclerViewAdapter extends RecyclerView.Adapter<ImageLi
             }
         }
 
-        public class CustomClickListener implements View.OnClickListener {
-
-            public Image mImage;
-
-            @Override
-            public void onClick(View v) {
-
-                if( mImage == null )
-                    return;
-
-                int index = ImageLinearRecyclerViewAdapter.this.mImageList.indexOf(mImage);
-
-                if( index >= 0 ) {
-
-                    mImageList.remove(index);
-
-                    ImageLinearRecyclerViewAdapter.this.notifyItemRemoved(index);
-                }
-
-                if( ImageLinearRecyclerViewAdapter.this.mOriginImages != null ) {
-
-                    int originSize = ImageLinearRecyclerViewAdapter.this.mOriginImages.size();
-
-                    for( index = 0; index < originSize; index++  ) {
-
-                        com.nguyenhoanglam.imagepicker.model.Image image =
-                                ImageLinearRecyclerViewAdapter.this.mOriginImages.get(index);
-
-                        File file = new File(image.getPath());
-                        Uri uri = Uri.fromFile(file);
-                        String uriString = uri.toString();
-
-                        if( mImage.highResUri.compareToIgnoreCase(uriString) == 0 &&
-                                mImage.lowResUri.compareToIgnoreCase(uriString) == 0 ) {
-
-                            ImageLinearRecyclerViewAdapter.this.mOriginImages.remove(index);
-                            break;
-                        }
-                    }
-                }
-
-                mImage = null;
-            }
-        }
-
         public EditText mCaption;
-        public SimpleDraweeView mImage;
         public CustomTextWatcher mTextWatcher;
-        public ImageButton mDeleteButton;
-        public CustomClickListener mCustomClickListener;
 
         public ImageViewHolder(View itemView) {
 
             super(itemView);
 
-            mImage = (SimpleDraweeView) itemView.findViewById(R.id.image);
             mCaption = (EditText) itemView.findViewById(R.id.caption);
-            mDeleteButton = (ImageButton) itemView.findViewById(R.id.delete_button);
 
             mTextWatcher = new CustomTextWatcher();
-            mCustomClickListener = new CustomClickListener();
 
             mCaption.addTextChangedListener(mTextWatcher);
-            mDeleteButton.setOnClickListener(mCustomClickListener);
         }
     }
-
-    private ArrayList<com.nguyenhoanglam.imagepicker.model.Image> mOriginImages;
-    private ArrayList<Image> mImageList;
 
     public ImageLinearRecyclerViewAdapter(ArrayList<com.nguyenhoanglam.imagepicker.model.Image> originImages,
                                           ArrayList<Image> imageList) {
 
-        mOriginImages = originImages;
-        mImageList = imageList;
+        super(originImages, imageList);
     }
 
     @Override
@@ -147,42 +91,17 @@ public class ImageLinearRecyclerViewAdapter extends RecyclerView.Adapter<ImageLi
     }
 
     @Override
-    public void onBindViewHolder(ImageViewHolder viewHolder, final int position) {
+    public void onBindViewHolder(ImageRecyclerViewAdapter.ImageViewHolder viewHolder, int position) {
 
-        SimpleDraweeView simpleDraweeView = viewHolder.mImage;
-        EditText caption = viewHolder.mCaption;
+        super.onBindViewHolder(viewHolder, position);
 
+        ImageViewHolder imageViewHolder = (ImageViewHolder) viewHolder;
         Image image = mImageList.get(position);
-        DraweeController controller = Fresco.newDraweeControllerBuilder()
-                .setLowResImageRequest(ImageRequest.fromUri(image.lowResUri))
-                .setImageRequest(ImageRequest.fromUri(image.highResUri))
-                .setOldController(simpleDraweeView.getController())
-                .build();
 
-        simpleDraweeView.setController(controller);
+        EditText caption = imageViewHolder.mCaption;
 
-        viewHolder.mTextWatcher.mImage = image;
-        viewHolder.mCustomClickListener.mImage = image;
+        imageViewHolder.mTextWatcher.mImage = image;
 
         caption.setText(image.caption);
-    }
-
-    @Override
-    public int getItemCount() {
-
-        return mImageList.size();
-    }
-
-    public void setImageList(ArrayList<com.nguyenhoanglam.imagepicker.model.Image> originImages, ArrayList<Image> imageList) {
-
-        mOriginImages = originImages;
-        mImageList = imageList;
-
-        if( mImageList == null ) {
-
-            mImageList = new ArrayList<>();
-        }
-
-        notifyDataSetChanged();
     }
 }

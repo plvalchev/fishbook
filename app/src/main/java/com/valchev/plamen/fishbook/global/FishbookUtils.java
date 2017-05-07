@@ -59,10 +59,6 @@ public class FishbookUtils {
         Calendar calendar = Calendar.getInstance();
         Date result = calendar.getTime();
 
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy");
 
         try {
@@ -84,5 +80,40 @@ public class FishbookUtils {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy");
 
         return simpleDateFormat.format(date);
+    }
+
+    public static Date stringToDateTime(String date) {
+
+        Calendar calendar = Calendar.getInstance();
+        Date result = calendar.getTime();
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy kk:mm:ss");
+
+        try {
+
+            if( date != null ) {
+
+                result = simpleDateFormat.parse(date);
+            }
+
+        } catch (ParseException e) {
+
+        }
+
+        return result;
+    }
+
+    public static String dateTimeToString(Date date) {
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy kk:mm:ss");
+
+        return simpleDateFormat.format(date);
+    }
+
+    public static String getCurrentDateTime() {
+
+        Date date = new Date();
+
+        return dateTimeToString(date);
     }
 }
