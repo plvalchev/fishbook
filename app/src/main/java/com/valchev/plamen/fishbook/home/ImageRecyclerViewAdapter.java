@@ -13,6 +13,8 @@ import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.facebook.imagepipeline.request.ImageRequest;
+import com.facebook.imagepipeline.request.ImageRequestBuilder;
+import com.rohitarya.fresco.facedetection.processor.FaceCenterCrop;
 import com.valchev.plamen.fishbook.R;
 import com.valchev.plamen.fishbook.models.Image;
 
@@ -95,9 +97,12 @@ public abstract class ImageRecyclerViewAdapter extends RecyclerView.Adapter<Imag
         SimpleDraweeView simpleDraweeView = viewHolder.mImage;
 
         Image image = mImageList.get(position);
+        ImageRequest imageRequest = ImageRequestBuilder.newBuilderWithSource(Uri.parse(image.midResUri))
+                .setPostprocessor(new FaceCenterCrop(512, 512))
+                .build();
         DraweeController controller = Fresco.newDraweeControllerBuilder()
                 .setLowResImageRequest(ImageRequest.fromUri(image.lowResUri))
-                .setImageRequest(ImageRequest.fromUri(image.highResUri))
+                .setImageRequest(imageRequest)
                 .setOldController(simpleDraweeView.getController())
                 .build();
 
@@ -160,6 +165,7 @@ public abstract class ImageRecyclerViewAdapter extends RecyclerView.Adapter<Imag
                 String uriString = uri.toString();
 
                 if( image.highResUri.compareToIgnoreCase(uriString) == 0 &&
+                        image.midResUri.compareToIgnoreCase(uriString) == 0 &&
                         image.lowResUri.compareToIgnoreCase(uriString) == 0 ) {
 
                     mOriginImages.remove(index);

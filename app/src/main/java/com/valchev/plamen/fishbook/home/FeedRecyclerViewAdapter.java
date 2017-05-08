@@ -18,6 +18,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.valchev.plamen.fishbook.R;
 import com.valchev.plamen.fishbook.global.FishbookPost;
 import com.valchev.plamen.fishbook.global.FishbookUser;
@@ -44,9 +45,11 @@ public class FeedRecyclerViewAdapter extends FirebaseRecyclerAdapter<Post, FeedR
         protected SimpleDraweeView mProfilePicture;
         protected TextView mDisplayName;
         protected TextView mPostDate;
+        protected ExpandableTextView mDescription;
         protected Post mPost;
         protected DatabaseReference mUserDatabaseReference;
         protected User mUserData;
+
 
         public FeedViewHolder(View itemView) {
 
@@ -57,6 +60,7 @@ public class FeedRecyclerViewAdapter extends FirebaseRecyclerAdapter<Post, FeedR
             mProfilePicture = (SimpleDraweeView) itemView.findViewById(R.id.profile_picture);
             mDisplayName = (TextView) itemView.findViewById(R.id.display_name);
             mPostDate = (TextView) itemView.findViewById(R.id.post_date);
+            mDescription = (ExpandableTextView) itemView.findViewById(R.id.post_description).findViewById(R.id.expand_text_view);
 
             mMainRecyclerViewAdapter = new ImageGridRecyclerViewAdapter(null, ImageGridRecyclerViewAdapter.INFINITY);
             mSubRecyclerViewAdapter = new ImageGridRecyclerViewAdapter(null, 3);
@@ -88,10 +92,11 @@ public class FeedRecyclerViewAdapter extends FirebaseRecyclerAdapter<Post, FeedR
             }
             else {
 
-                bindUserData()';'
+                bindUserData();
             }
 
             mPostDate.setText(mPost.dateTime);
+            mDescription.setText(mPost.description);
 
             if( mPost.images == null || mPost.images.size() == 0 ) {
 
@@ -161,7 +166,7 @@ public class FeedRecyclerViewAdapter extends FirebaseRecyclerAdapter<Post, FeedR
 
                 DraweeController controller = Fresco.newDraweeControllerBuilder()
                         .setLowResImageRequest(ImageRequest.fromUri(profilePicture.lowResUri))
-                        .setImageRequest(ImageRequest.fromUri(profilePicture.highResUri))
+                        .setImageRequest(ImageRequest.fromUri(profilePicture.midResUri))
                         .setOldController(mProfilePicture.getController())
                         .build();
 

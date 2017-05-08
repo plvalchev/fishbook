@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.ms.square.android.expandabletextview.ExpandableTextView;
+import com.rohitarya.fresco.facedetection.processor.core.FrescoFaceDetector;
 import com.stfalcon.frescoimageviewer.ImageViewer;
 import com.valchev.plamen.fishbook.R;
 
@@ -45,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        FrescoFaceDetector.initialize(this);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
         mTabLayout = (TabLayout) findViewById(R.id.tab_layout);
@@ -71,6 +74,12 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        FrescoFaceDetector.releaseDetector();
     }
 
     @Override

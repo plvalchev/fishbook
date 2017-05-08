@@ -3,6 +3,7 @@ package com.valchev.plamen.fishbook.home;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -14,10 +15,12 @@ import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.beloo.widget.chipslayoutmanager.util.log.Log;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.facebook.imagepipeline.request.ImageRequest;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.database.DatabaseError;
 import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.nguyenhoanglam.imagepicker.activity.ImagePicker;
@@ -142,7 +145,7 @@ public class EditProfileFragment extends Fragment {
 
             DraweeController controller = Fresco.newDraweeControllerBuilder()
                     .setLowResImageRequest(ImageRequest.fromUri(actualProfilePicture.lowResUri))
-                    .setImageRequest(ImageRequest.fromUri(actualProfilePicture.highResUri))
+                    .setImageRequest(ImageRequest.fromUri(actualProfilePicture.midResUri))
                     .setOldController(mProfilePicture.getController())
                     .build();
 
@@ -175,7 +178,7 @@ public class EditProfileFragment extends Fragment {
 
             DraweeController controller = Fresco.newDraweeControllerBuilder()
                     .setLowResImageRequest(ImageRequest.fromUri(actualCoverPhoto.lowResUri))
-                    .setImageRequest(ImageRequest.fromUri(actualCoverPhoto.highResUri))
+                    .setImageRequest(ImageRequest.fromUri(actualCoverPhoto.midResUri))
                     .setOldController(mCoverPhoto.getController())
                     .build();
 
@@ -323,9 +326,19 @@ public class EditProfileFragment extends Fragment {
         Uri uri = Uri.fromFile(file);
         String uriString = uri.toString();
         com.valchev.plamen.fishbook.models.Image imageModel =
-                new com.valchev.plamen.fishbook.models.Image(uriString, uriString, profilePicture.getPath());
+                new com.valchev.plamen.fishbook.models.Image(uriString, uriString, uriString, profilePicture.getPath());
 
-        mFishbookUser.setProfilePicture(imageModel);
+        mFishbookUser.setProfilePicture(imageModel, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+
+                Log.d("setProfilePicture", "Unable to set profile picture");
+
+                mProgressBar.setVisibility(View.GONE);
+
+                e.printStackTrace();
+            }
+        });
         mProgressBar.setVisibility(View.VISIBLE);
     }
 
@@ -335,9 +348,19 @@ public class EditProfileFragment extends Fragment {
         Uri uri = Uri.fromFile(file);
         String uriString = uri.toString();
         com.valchev.plamen.fishbook.models.Image imageModel =
-                new com.valchev.plamen.fishbook.models.Image(uriString, uriString, coverPhoto.getPath());
+                new com.valchev.plamen.fishbook.models.Image(uriString, uriString, uriString, coverPhoto.getPath());
 
-        mFishbookUser.setCoverPhoto(imageModel);
+        mFishbookUser.setCoverPhoto(imageModel, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+
+                Log.d("setCoverPhoto", "Unable to set cover photo");
+
+                mProgressBar.setVisibility(View.GONE);
+
+                e.printStackTrace();
+            }
+        });
         mProgressBar.setVisibility(View.VISIBLE);
     }
 }

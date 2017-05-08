@@ -12,6 +12,7 @@ import com.luseen.spacenavigation.SpaceNavigationView;
 import com.luseen.spacenavigation.SpaceOnClickListener;
 import com.nguyenhoanglam.imagepicker.activity.ImagePicker;
 import com.nguyenhoanglam.imagepicker.activity.ImagePickerActivity;
+import com.rohitarya.fresco.facedetection.processor.core.FrescoFaceDetector;
 import com.valchev.plamen.fishbook.R;
 import com.valchev.plamen.fishbook.models.Image;
 
@@ -41,6 +42,8 @@ public class ImagesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_images);
 
+        FrescoFaceDetector.initialize(this);
+
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mSpaceNavigationView = (SpaceNavigationView) findViewById(R.id.space);
 
@@ -65,6 +68,12 @@ public class ImagesActivity extends AppCompatActivity {
 
         initSpaceNavigationView();
         initRecyclerView();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        FrescoFaceDetector.releaseDetector();
     }
 
     @Override
@@ -153,7 +162,7 @@ public class ImagesActivity extends AppCompatActivity {
             File file = new File(image.getPath());
             Uri uri = Uri.fromFile(file);
             String uriString = uri.toString();
-            Image imageOriginModel = new Image(uriString, uriString, image.getPath());
+            Image imageOriginModel = new Image(uriString, uriString, uriString, image.getPath());
             int index = imageModelArrayList.indexOf(imageOriginModel);
 
             if( index >= 0 ) {
@@ -176,7 +185,7 @@ public class ImagesActivity extends AppCompatActivity {
             File file = new File(image.getPath());
             Uri uri = Uri.fromFile(file);
             String uriString = uri.toString();
-            Image imageModel = new Image(uriString, uriString, image.getPath());
+            Image imageModel = new Image(uriString, uriString, uriString, image.getPath());
 
             int indexOf = mImageList.indexOf(imageModel);
 

@@ -20,7 +20,7 @@ import java.util.UUID;
  * Created by admin on 7.5.2017 г..
  */
 
-public class FishbookPost implements OnSuccessListener<ArrayList<MultipleImageUploader.MultipleImage>> {
+public class FishbookPost implements OnSuccessListener<ArrayList<Image>> {
 
     protected Post mPost;
     protected DatabaseReference mDatabaseReference;
@@ -53,9 +53,10 @@ public class FishbookPost implements OnSuccessListener<ArrayList<MultipleImageUp
 
                 String imageName = "post_" + UUID.randomUUID().toString();
                 StorageReference lowResImageStorageReference = getLowResImageStorageReference(imageName, mPost.userID);
+                StorageReference midResImageStorageReference = getMidResImageStorageReference(imageName, mPost.userID);
                 StorageReference highResImageStorageReference = getHighResImageStorageReference(imageName, mPost.userID);
                 MultipleImageUploader.MultipleImage multipleImage =
-                        new MultipleImageUploader.MultipleImage(image, lowResImageStorageReference, highResImageStorageReference);
+                        new MultipleImageUploader.MultipleImage(image, lowResImageStorageReference, midResImageStorageReference, highResImageStorageReference);
 
                 multipleImages.add(multipleImage);
             }
@@ -63,9 +64,9 @@ public class FishbookPost implements OnSuccessListener<ArrayList<MultipleImageUp
 
         if( multipleImages != null ) {
 
-            MultipleImageUploader multipleImageUploader = new MultipleImageUploader(multipleImages);
-            multipleImageUploader.addOnSuccessListener(this);
-            multipleImageUploader.uploadImages();
+            MultipleImageUploader multipleImageUploader = new MultipleImageUploader(this);
+
+            multipleImageUploader.execute(multipleImages.toArray(new MultipleImageUploader.MultipleImage[multipleImages.size()]));
 
         }
         else {
@@ -75,7 +76,7 @@ public class FishbookPost implements OnSuccessListener<ArrayList<MultipleImageUp
     }
 
     @Override
-    public void onSuccess(ArrayList<MultipleImageUploader.MultipleImage> images) {
+    public void onSuccess(ArrayList<Image> images) {
 
         savePostInFirebase();
     }
@@ -117,6 +118,13 @@ public class FishbookPost implements OnSuccessListener<ArrayList<MultipleImageUp
     protected StorageReference getLowResImageStorageReference(String imageName, String uid) {
 
         StorageReference storageReference = mStorageReference.child("images/" + uid + "/posts/low_res/" + imageName);
+
+        return storageReference;
+    }
+
+    protected StorageReference getMidResImageStorageReference(String imageName, String uid) {
+
+        StorageReference storageReference = mStorageReference.child("images/" + uid + "/posts/mid_res/" + imageName);
 
         return storageReference;
     }

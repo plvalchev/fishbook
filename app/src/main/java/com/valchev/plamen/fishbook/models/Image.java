@@ -13,6 +13,7 @@ public class Image implements Serializable {
 
     public String caption;
     public String lowResUri;
+    public String midResUri;
     public String highResUri;
 
     @Exclude
@@ -22,15 +23,17 @@ public class Image implements Serializable {
 
     }
 
-    public Image(String lowResUri, String highResUri) {
+    public Image(String lowResUri, String midResUri, String highResUri) {
 
         this.lowResUri = lowResUri;
+        this.midResUri = midResUri;
         this.highResUri = highResUri;
     }
 
-    public Image(String lowResUri, String highResUri, String path) {
+    public Image(String lowResUri, String midResUri, String highResUri, String path) {
 
         this.lowResUri = lowResUri;
+        this.midResUri = midResUri;
         this.highResUri = highResUri;
         this.path = path;
     }

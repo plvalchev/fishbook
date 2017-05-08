@@ -51,7 +51,12 @@ public class ImageLinearRecyclerViewAdapter extends ImageRecyclerViewAdapter {
                 if( mImage == null )
                     return;
 
-                mImage.caption = s.toString();
+                String caption = s.toString();
+
+                if( caption == null || caption.isEmpty() )
+                    mImage.caption = null;
+                else
+                    mImage.caption = caption;
             }
 
             @Override

@@ -2,6 +2,8 @@ package com.valchev.plamen.fishbook.global;
 
 import android.support.annotation.NonNull;
 
+import com.beloo.widget.chipslayoutmanager.util.log.Log;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -22,7 +24,7 @@ import java.util.UUID;
  * Created by admin on 9.4.2017 г..
  */
 
-public class FishbookUser implements ValueEventListener, OnSuccessListener<ArrayList<MultipleImageUploader.MultipleImage>> {
+public class FishbookUser implements ValueEventListener, OnSuccessListener<ArrayList<Image>> {
 
     public interface UserValueEventListener {
 
@@ -95,18 +97,24 @@ public class FishbookUser implements ValueEventListener, OnSuccessListener<Array
 
     public void saveUserData() {
 
+        Log.d( "saveUserData", "Save user data begin" );
+
         DatabaseReference userDatabaseReference = getUserDatabaseReference();
 
         userDatabaseReference.setValue(mUserData);
+
+        Log.d( "saveUserData", "Save user data end" );
     }
 
     @Override
-    public void onSuccess(ArrayList<MultipleImageUploader.MultipleImage> images) {
+    public void onSuccess(ArrayList<Image> images) {
+
+        Log.d( "onSuccess", "On success called" );
 
         saveUserData();
     }
 
-    public void setCoverPhoto(Image newImage) {
+    public void setCoverPhoto(Image newImage, OnFailureListener onFailureListener) {
 
         if (mUserData.coverPhotos == null) {
 
@@ -120,12 +128,12 @@ public class FishbookUser implements ValueEventListener, OnSuccessListener<Array
 
             String coverPhotoName = "cover_photo_" + UUID.randomUUID().toString();
             StorageReference lowResCoverPhotosStorageReference = getLowResCoverPhotosStorageReference(coverPhotoName);
+            StorageReference midResCoverPhotosStorageReference = getMidResCoverPhotosStorageReference(coverPhotoName);
             StorageReference highResCoverPhotosStorageReference = getHighResCoverPhotosStorageReference(coverPhotoName);
-            MultipleImageUploader.MultipleImage multipleImage = new MultipleImageUploader.MultipleImage(newImage, lowResCoverPhotosStorageReference, highResCoverPhotosStorageReference);
-            MultipleImageUploader multipleImageUploader = new MultipleImageUploader(multipleImage);
+            MultipleImageUploader.MultipleImage multipleImage = new MultipleImageUploader.MultipleImage(newImage, lowResCoverPhotosStorageReference, midResCoverPhotosStorageReference, highResCoverPhotosStorageReference);
+            MultipleImageUploader multipleImageUploader = new MultipleImageUploader(this, onFailureListener);
 
-            multipleImageUploader.addOnSuccessListener(this);
-            multipleImageUploader.uploadImages();
+            multipleImageUploader.execute(multipleImage);
         }
         else {
 
@@ -133,7 +141,7 @@ public class FishbookUser implements ValueEventListener, OnSuccessListener<Array
         }
     }
 
-    public void setProfilePicture(Image newImage) {
+    public void setProfilePicture(Image newImage, OnFailureListener onFailureListener) {
 
         if( mUserData.profilePictures == null ) {
 
@@ -147,12 +155,12 @@ public class FishbookUser implements ValueEventListener, OnSuccessListener<Array
 
             String profilePictureName = "profile_picture" + UUID.randomUUID().toString();
             StorageReference lowResProfilePictureStorageReference = getLowResProfilePicturesStorageReference(profilePictureName);
+            StorageReference midResProfilePictureStorageReference = getMidResProfilePicturesStorageReference(profilePictureName);
             StorageReference highResProfilePictureStorageReference = getHighResProfilePicturesStorageReference(profilePictureName);
-            MultipleImageUploader.MultipleImage multipleImage = new MultipleImageUploader.MultipleImage(newImage, lowResProfilePictureStorageReference, highResProfilePictureStorageReference);
-            MultipleImageUploader multipleImageUploader = new MultipleImageUploader(multipleImage);
+            MultipleImageUploader.MultipleImage multipleImage = new MultipleImageUploader.MultipleImage(newImage, lowResProfilePictureStorageReference, midResProfilePictureStorageReference, highResProfilePictureStorageReference);
+            MultipleImageUploader multipleImageUploader = new MultipleImageUploader(this, onFailureListener);
 
-            multipleImageUploader.addOnSuccessListener(this);
-            multipleImageUploader.uploadImages();
+            multipleImageUploader.execute(multipleImage);
         }
         else {
 
@@ -272,6 +280,20 @@ public class FishbookUser implements ValueEventListener, OnSuccessListener<Array
     protected StorageReference getLowResProfilePicturesStorageReference(String profilePictureName) {
 
         StorageReference storageReference = mStorageReference.child("images/" + getUid() + "/profile_pictures/low_res/" + profilePictureName);
+
+        return storageReference;
+    }
+
+    protected StorageReference getMidResCoverPhotosStorageReference(String coverPhotoName) {
+
+        StorageReference storageReference = mStorageReference.child("images/" + getUid() + "/cover_photos/mid_res/" + coverPhotoName);
+
+        return storageReference;
+    }
+
+    protected StorageReference getMidResProfilePicturesStorageReference(String profilePictureName) {
+
+        StorageReference storageReference = mStorageReference.child("images/" + getUid() + "/profile_pictures/mid_res/" + profilePictureName);
 
         return storageReference;
     }

@@ -1,30 +1,45 @@
 package com.valchev.plamen.fishbook.global;
 
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.util.Log;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.valchev.plamen.fishbook.models.Image;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Created by admin on 23.4.2017 г..
  */
 
-public class MultipleImageUploader {
+public class MultipleImageUploader extends AsyncTask<MultipleImageUploader.MultipleImage, Void, ArrayList<Image>> {
+
+    private enum URL_TYPE {
+
+        LOW_RES,
+        MID_RES,
+        HIGH_RES
+    }
 
     private class OnImageUploadSuccessListener implements OnSuccessListener<UploadTask.TaskSnapshot> {
 
         private Image mImage;
-        private boolean mLowResUrl;
+        private URL_TYPE mUrlType;
 
-        public OnImageUploadSuccessListener(Image image, boolean lowResUrl) {
+        public OnImageUploadSuccessListener(Image image, URL_TYPE urlType) {
 
             mImage = image;
-            mLowResUrl = lowResUrl;
+            mUrlType = urlType;
         }
 
         @Override
@@ -33,33 +48,17 @@ public class MultipleImageUploader {
             Uri downloadUri = taskSnapshot.getDownloadUrl();
             String uri = downloadUri.toString();
 
-            if( mLowResUrl ) {
+            switch (mUrlType) {
 
-                mImage.lowResUri = uri;
-            }
-            else {
-
-                mImage.highResUri = uri;
-            }
-
-            if( mImage.lowResUri.startsWith("http") && mImage.highResUri.startsWith("http") )
-                mImage.path = null;
-
-            for (MultipleImage multipleImage: mMultipleImages) {
-
-                if( multipleImage == null )
-                    return;
-
-                if( !multipleImage.image.isUploaded() )
-                    return;
-            }
-
-            if( mSuccessListeners != null ) {
-
-                for( OnSuccessListener<ArrayList<MultipleImage>> successListener : mSuccessListeners ) {
-
-                    successListener.onSuccess(mMultipleImages);
-                }
+                case LOW_RES:
+                    mImage.lowResUri = uri;
+                    break;
+                case MID_RES:
+                    mImage.midResUri = uri;
+                    break;
+                case HIGH_RES:
+                    mImage.highResUri = uri;
+                    break;
             }
         }
     }
@@ -68,78 +67,119 @@ public class MultipleImageUploader {
 
         public Image image;
         public StorageReference lowResStorageReference;
+        public StorageReference midResStorageReference;
         public StorageReference highResStorageReference;
 
-        public MultipleImage(Image image, StorageReference lowResStorageReference, StorageReference highResStorageReference) {
+        public MultipleImage(Image image, StorageReference lowResStorageReference, StorageReference midResStorageReference, StorageReference highResStorageReference) {
+
             this.image = image;
             this.lowResStorageReference = lowResStorageReference;
+            this.midResStorageReference = midResStorageReference;
             this.highResStorageReference = highResStorageReference;
         }
     }
 
-    private ArrayList<OnFailureListener> mFailureListeners;
-    private ArrayList<OnSuccessListener<ArrayList<MultipleImage>>> mSuccessListeners;
-    private ArrayList<MultipleImage> mMultipleImages;
+    OnFailureListener mOnFailureListener;
+    OnSuccessListener<ArrayList<Image>> mImageOnSuccessListener;
 
-    public MultipleImageUploader(MultipleImage multipleImage) {
+    public MultipleImageUploader(OnSuccessListener<ArrayList<Image>> onSuccessListener) {
 
-        mMultipleImages = new ArrayList<>();
-
-        mMultipleImages.add(multipleImage);
+        mImageOnSuccessListener = onSuccessListener;
     }
 
-    public MultipleImageUploader(ArrayList<MultipleImage> multipleImages) {
+    public MultipleImageUploader(OnSuccessListener<ArrayList<Image>> onSuccessListener, OnFailureListener onFailureListener) {
 
-        mMultipleImages = multipleImages;
+        mImageOnSuccessListener = onSuccessListener;
+        mOnFailureListener = onFailureListener;
     }
 
-    public MultipleImageUploader addOnFailureListener(OnFailureListener onFailureListener) {
+    @Override
+    protected ArrayList<Image> doInBackground(MultipleImage... params) {
 
-        if( mFailureListeners == null ) {
+        ArrayList<UploadTask> uploadTasks = new ArrayList<>();
+        final ArrayList<Image> result = new ArrayList<>();
 
-            mFailureListeners = new ArrayList<>();
-        }
-
-        mFailureListeners.add(onFailureListener);
-        return this;
-    }
-
-    public MultipleImageUploader addOnSuccessListener(OnSuccessListener<ArrayList<MultipleImage>> onSuccessListener) {
-
-        if( mSuccessListeners == null ) {
-
-            mSuccessListeners = new ArrayList<>();
-        }
-
-        mSuccessListeners.add(onSuccessListener);
-        return this;
-    }
-
-    public void uploadImages() {
-
-        for (MultipleImage multipleImage : mMultipleImages) {
+        for (MultipleImage multipleImage : params) {
 
             Image image = multipleImage.image;
 
-            byte[] lowResResByteArray = FishbookUtils.resizeAndCompressImage(image.path, 15, 15);
-            byte[] highResByteArray = FishbookUtils.resizeAndCompressImage(image.path, 1560, 1560);
+            result.add(image);
+
+            byte[] lowResResByteArray = FishbookUtils.resizeAndCompressImage(image.path, 64, 64);
+            byte[] midResResByteArray = FishbookUtils.resizeAndCompressImage(image.path, 768, 768);
+            byte[] highResByteArray = FishbookUtils.resizeAndCompressImage(image.path, 1280, 1280);
 
             StorageReference lowResStorageReference = multipleImage.lowResStorageReference;
+            StorageReference midResStorageReference = multipleImage.midResStorageReference;
             StorageReference highResStorageReference = multipleImage.highResStorageReference;
             UploadTask lowResUploadTask = lowResStorageReference.putBytes(lowResResByteArray);
+            UploadTask midResUploadTask = midResStorageReference.putBytes(midResResByteArray);
             UploadTask highResUploadTask = highResStorageReference.putBytes(highResByteArray);
 
-            if (mFailureListeners != null) {
+            lowResUploadTask.addOnSuccessListener(new OnImageUploadSuccessListener(image, URL_TYPE.LOW_RES));
+            midResUploadTask.addOnSuccessListener(new OnImageUploadSuccessListener(image, URL_TYPE.MID_RES));
+            highResUploadTask.addOnSuccessListener(new OnImageUploadSuccessListener(image, URL_TYPE.HIGH_RES));
 
-                for (OnFailureListener failureListener : mFailureListeners) {
-
-                    lowResUploadTask.addOnFailureListener(failureListener);
-                    highResUploadTask.addOnFailureListener(failureListener);
-                }
-            }
-
-            lowResUploadTask.addOnSuccessListener(new OnImageUploadSuccessListener(image, true));
-            highResUploadTask.addOnSuccessListener(new OnImageUploadSuccessListener(image, false));
+            uploadTasks.add(lowResUploadTask);
+            uploadTasks.add(midResUploadTask);
+            uploadTasks.add(highResUploadTask);
         }
+
+        try {
+
+            Task<Void> uploadTask = Tasks.whenAll(uploadTasks);
+
+            uploadTask.addOnFailureListener(mOnFailureListener);
+
+            Log.d("Multi image upload", "Awaiting started");
+
+            Tasks.await(uploadTask, 1, TimeUnit.MINUTES);
+
+            Log.d("Multi image upload", "Awaiting finished");
+
+        } catch (ExecutionException e) {
+
+            e.printStackTrace();
+
+        } catch (InterruptedException e) {
+
+            e.printStackTrace();
+
+        } catch (TimeoutException e) {
+
+            Log.d("Multi image upload", "Time out");
+
+            e.printStackTrace();
+        }
+
+        for (Image image : result) {
+
+            if( image.lowResUri.startsWith("http") &&
+                    image.midResUri.startsWith("http") &&
+                    image.highResUri.startsWith("http") ) {
+
+                image.path = null;
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    protected void onPostExecute(ArrayList<Image> images) {
+
+        for (Image image : images) {
+
+            if( !image.isUploaded() ) {
+
+                Log.d("Multi image upload", "Image is not uploaded");
+                Log.d("Multi image upload", "Low res uri:" + image.lowResUri);
+                Log.d("Multi image upload", "Mid res uri:" + image.midResUri);
+                Log.d("Multi image upload", "High res uri:" + image.highResUri);
+                return;
+            }
+        }
+
+        mImageOnSuccessListener.onSuccess(images);
     }
 }

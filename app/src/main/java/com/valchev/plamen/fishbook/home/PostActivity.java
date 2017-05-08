@@ -24,6 +24,7 @@ import com.nguyenhoanglam.imagepicker.activity.ImagePickerActivity;
 import com.pchmn.materialchips.ChipsInput;
 import com.pchmn.materialchips.model.Chip;
 import com.pchmn.materialchips.model.ChipInterface;
+import com.rohitarya.fresco.facedetection.processor.core.FrescoFaceDetector;
 import com.valchev.plamen.fishbook.R;
 import com.valchev.plamen.fishbook.global.FishbookPost;
 import com.valchev.plamen.fishbook.global.FishbookUser;
@@ -76,6 +77,8 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post);
 
+        FrescoFaceDetector.initialize(this);
+
         mProfilePicture = (SimpleDraweeView) findViewById(R.id.profile_picture);
         mDisplayName = (TextView) findViewById(R.id.display_name);
         mDescription = (EditText) findViewById(R.id.post_description);
@@ -110,6 +113,12 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
             restoreChipsState(savedInstanceState, mFishingMethodChipsInput, KEY_SELECTED_METHOD_CHIPS);
             restoreChipsState(savedInstanceState, mSpeciesChipsInput, KEY_SELECTED_SPECIE_CHIPS);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        FrescoFaceDetector.releaseDetector();
     }
 
     protected void initChipsFilterableLists() {
@@ -380,7 +389,7 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
             File file = new File(image.getPath());
             Uri uri = Uri.fromFile(file);
             String uriString = uri.toString();
-            Image imageOriginModel = new Image(uriString, uriString, image.getPath());
+            Image imageOriginModel = new Image(uriString, uriString, uriString, image.getPath());
             int index = imageModelArrayList.indexOf(imageOriginModel);
 
             if( index >= 0 ) {
@@ -403,7 +412,7 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
             File file = new File(image.getPath());
             Uri uri = Uri.fromFile(file);
             String uriString = uri.toString();
-            Image imageModel = new Image(uriString, uriString, image.getPath());
+            Image imageModel = new Image(uriString, uriString, uriString, image.getPath());
 
             int indexOf = mImageList.indexOf(imageModel);
 
