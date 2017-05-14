@@ -113,6 +113,52 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
             restoreChipsState(savedInstanceState, mFishingMethodChipsInput, KEY_SELECTED_METHOD_CHIPS);
             restoreChipsState(savedInstanceState, mSpeciesChipsInput, KEY_SELECTED_SPECIE_CHIPS);
         }
+        else {
+
+            Intent intent = getIntent();
+            Bundle bundle = intent.getExtras();
+
+            if( bundle != null ) {
+
+                mPost = (Post) bundle.getSerializable("Post");
+            }
+
+            if (mPost != null) {
+
+                loadPost();
+            }
+        }
+    }
+
+    protected void loadPost() {
+
+        setImageListToRecyclerViews(mPost.images);
+
+        mDescription.setText(mPost.description);
+
+        if( mPost.species != null ) {
+
+            for (Specie specie : mPost.species) {
+
+                mSpeciesChipsInput.addChip(new Chip(specie.name, null));
+            }
+        }
+
+        if( mPost.fishingRegions != null ) {
+
+            for (FishingRegion region : mPost.fishingRegions) {
+
+                mFishingRegionChipsInput.addChip(new Chip(region.name, null));
+            }
+        }
+
+        if( mPost.fishingMethods != null ) {
+
+            for (FishingMethod method : mPost.fishingMethods) {
+
+                mFishingMethodChipsInput.addChip(new Chip(method.name, null));
+            }
+        }
     }
 
     @Override
@@ -527,6 +573,8 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
                 mPost.fishingRegions = new ArrayList<>();
             }
 
+            mPost.fishingRegions.clear();
+
             mPost.fishingRegions.add(new FishingRegion(chip.getLabel()));
         }
 
@@ -539,6 +587,8 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
                 mPost.fishingMethods = new ArrayList<>();
             }
 
+            mPost.fishingMethods.clear();
+
             mPost.fishingMethods.add(new FishingMethod(chip.getLabel()));
         }
 
@@ -550,6 +600,8 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
 
                 mPost.species = new ArrayList<>();
             }
+
+            mPost.species.clear();
 
             mPost.species.add(new Specie(chip.getLabel()));
         }

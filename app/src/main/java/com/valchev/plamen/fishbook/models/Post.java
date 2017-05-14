@@ -2,6 +2,7 @@ package com.valchev.plamen.fishbook.models;
 
 import com.google.firebase.database.Exclude;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,8 +11,9 @@ import java.util.Map;
  * Created by admin on 29.4.2017 г..
  */
 
-public class Post {
+public class Post implements Serializable {
 
+    public String key;
     public String userID;
     public String dateTime;
     public String description;
@@ -25,6 +27,7 @@ public class Post {
 
         HashMap<String, Object> result = new HashMap<>();
 
+        result.put("key", key);
         result.put("userID", userID);
         result.put("dateTime", dateTime);
         result.put("description", description);

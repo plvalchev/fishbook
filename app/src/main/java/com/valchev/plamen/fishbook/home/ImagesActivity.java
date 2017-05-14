@@ -21,7 +21,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class ImagesActivity extends AppCompatActivity {
+public class ImagesActivity extends FishbookActivity {
 
     private final static int REQUEST_CODE_PHOTOS = 2000;
     private final static int REQUEST_CODE_PREVIEW_IMAGES = 2001;
@@ -88,7 +88,7 @@ public class ImagesActivity extends AppCompatActivity {
     protected void initRecyclerView() {
 
         mLinearLayoutManager = new LinearLayoutManager(this);
-        mImageLinearRecyclerViewAdapter = new ImageLinearRecyclerViewAdapter(mOriginImages, mImageList);
+        mImageLinearRecyclerViewAdapter = new ImageLinearRecyclerViewAdapter(this, mOriginImages, mImageList);
 
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
         mRecyclerView.setAdapter(mImageLinearRecyclerViewAdapter);

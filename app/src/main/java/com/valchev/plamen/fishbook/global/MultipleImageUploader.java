@@ -172,11 +172,21 @@ public class MultipleImageUploader extends AsyncTask<MultipleImageUploader.Multi
 
             if( !image.isUploaded() ) {
 
-                Log.d("Multi image upload", "Image is not uploaded");
-                Log.d("Multi image upload", "Low res uri:" + image.lowResUri);
-                Log.d("Multi image upload", "Mid res uri:" + image.midResUri);
-                Log.d("Multi image upload", "High res uri:" + image.highResUri);
-                return;
+                if( image.lowResUri.startsWith("http") &&
+                        image.midResUri.startsWith("http") &&
+                        image.highResUri.startsWith("http") ) {
+
+                    image.path = null;
+                }
+                else {
+
+                    Log.d("Multi image upload", "Image is not uploaded");
+                    Log.d("Multi image upload", "Low res uri:" + image.lowResUri);
+                    Log.d("Multi image upload", "Mid res uri:" + image.midResUri);
+                    Log.d("Multi image upload", "High res uri:" + image.highResUri);
+                    Log.d("Multi image upload", "Path:" + image.path);
+                    return;
+                }
             }
         }
 

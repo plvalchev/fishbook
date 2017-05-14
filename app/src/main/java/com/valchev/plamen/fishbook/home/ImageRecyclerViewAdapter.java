@@ -32,11 +32,9 @@ public abstract class ImageRecyclerViewAdapter extends RecyclerView.Adapter<Imag
         void onDelete(Image image);
     }
 
-    public class ImageViewHolder extends RecyclerView.ViewHolder {
+    public class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         public class DeleteButtonClickListener implements View.OnClickListener {
-
-            public Image mImage;
 
             @Override
             public void onClick(View v) {
@@ -50,7 +48,8 @@ public abstract class ImageRecyclerViewAdapter extends RecyclerView.Adapter<Imag
             }
         }
 
-        public SimpleDraweeView mImage;
+        public Image mImage;
+        public SimpleDraweeView mImageView;
         public ImageButton mDeleteButton;
         public DeleteButtonClickListener mCustomClickListener;
 
@@ -58,7 +57,7 @@ public abstract class ImageRecyclerViewAdapter extends RecyclerView.Adapter<Imag
 
             super(itemView);
 
-            mImage = (SimpleDraweeView) itemView.findViewById(R.id.image);
+            mImageView = (SimpleDraweeView) itemView.findViewById(R.id.image);
             mDeleteButton = (ImageButton) itemView.findViewById(R.id.delete_button);
 
             if( mDeleteButton != null ) {
@@ -68,12 +67,28 @@ public abstract class ImageRecyclerViewAdapter extends RecyclerView.Adapter<Imag
                 mDeleteButton.setOnClickListener(mCustomClickListener);
             }
         }
+
+        @Override
+        public void onClick(View v) {
+
+            if( mFishbookActivity == null || mImage == null ) {
+                return;
+            }
+
+            int startPosition = mImageList.indexOf(mImage);
+
+            if( startPosition < 0 )
+                return;
+
+            mFishbookActivity.showImages(startPosition, mImageList);
+        }
     }
 
     protected ArrayList<com.nguyenhoanglam.imagepicker.model.Image> mOriginImages;
     protected ArrayList<Image> mImageList;
     protected boolean mShowDeleteButton;
     protected OnImageDeleteListener mOnImageDeleteListener;
+    protected FishbookActivity mFishbookActivity;
 
     public ImageRecyclerViewAdapter() {
 
@@ -83,10 +98,20 @@ public abstract class ImageRecyclerViewAdapter extends RecyclerView.Adapter<Imag
         mShowDeleteButton = true;
     }
 
-    public ImageRecyclerViewAdapter(ArrayList<com.nguyenhoanglam.imagepicker.model.Image> originImages, ArrayList<Image> imageList) {
+    public ImageRecyclerViewAdapter(FishbookActivity fishbookActivity) {
+
+        mImageList = new ArrayList<>();
+        mOriginImages = new ArrayList<>();
+        mFishbookActivity = fishbookActivity;
+
+        mShowDeleteButton = true;
+    }
+
+    public ImageRecyclerViewAdapter(FishbookActivity fishbookActivity, ArrayList<com.nguyenhoanglam.imagepicker.model.Image> originImages, ArrayList<Image> imageList) {
 
         mOriginImages = originImages;
         mImageList = imageList;
+        mFishbookActivity = fishbookActivity;
 
         mShowDeleteButton = true;
     }
@@ -94,11 +119,11 @@ public abstract class ImageRecyclerViewAdapter extends RecyclerView.Adapter<Imag
     @Override
     public void onBindViewHolder(ImageViewHolder viewHolder, final int position) {
 
-        SimpleDraweeView simpleDraweeView = viewHolder.mImage;
+        SimpleDraweeView simpleDraweeView = viewHolder.mImageView;
 
         Image image = mImageList.get(position);
         ImageRequest imageRequest = ImageRequestBuilder.newBuilderWithSource(Uri.parse(image.midResUri))
-                .setPostprocessor(new FaceCenterCrop(512, 512))
+//                .setPostprocessor(new FaceCenterCrop(768, 768))
                 .build();
         DraweeController controller = Fresco.newDraweeControllerBuilder()
                 .setLowResImageRequest(ImageRequest.fromUri(image.lowResUri))
@@ -108,12 +133,10 @@ public abstract class ImageRecyclerViewAdapter extends RecyclerView.Adapter<Imag
 
         simpleDraweeView.setController(controller);
 
-        if( viewHolder.mCustomClickListener != null ) {
+        viewHolder.mImage = image;
 
-            viewHolder.mCustomClickListener.mImage = image;
-        }
-
-        viewHolder.mDeleteButton.setVisibility(mShowDeleteButton ? View.VISIBLE : View.GONE);
+        if( viewHolder.mDeleteButton != null )
+            viewHolder.mDeleteButton.setVisibility(mShowDeleteButton ? View.VISIBLE : View.GONE);
     }
 
     @Override

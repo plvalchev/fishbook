@@ -30,7 +30,9 @@ public class FeedFragment extends Fragment {
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.list);
 
-        mFeedRecyclerViewAdapter = new FeedRecyclerViewAdapter();
+        FishbookActivity activity = (FishbookActivity)getActivity();
+
+        mFeedRecyclerViewAdapter = new FeedRecyclerViewAdapter(activity);
         mRecyclerView.setAdapter(mFeedRecyclerViewAdapter);
 
         return view;

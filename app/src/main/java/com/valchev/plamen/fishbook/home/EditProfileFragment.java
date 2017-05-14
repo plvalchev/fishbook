@@ -31,6 +31,7 @@ import com.valchev.plamen.fishbook.global.FishbookUser;
 import com.valchev.plamen.fishbook.models.User;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import static android.app.Activity.RESULT_OK;
@@ -54,8 +55,8 @@ public class EditProfileFragment extends Fragment {
     protected FloatingActionButton mActionButton;
     protected ProgressBar mProgressBar;
     protected PopupMenu mPopupMenu;
-    protected ArrayList<String> mProfilePictures;
-    protected ArrayList<String> mCoverPhotos;
+    protected ArrayList<com.valchev.plamen.fishbook.models.Image> mProfilePictures;
+    protected ArrayList<com.valchev.plamen.fishbook.models.Image> mCoverPhotos;
     protected int mProfilePicturesCurrentPosition;
     protected int mCoverPhotosCurrentPosition;
 
@@ -92,7 +93,28 @@ public class EditProfileFragment extends Fragment {
         mostChasedSpeciesTitle.setText(getResources().getString(R.string.chased_species));
         fishingMethodsTitle.setText(getResources().getString(R.string.fishing_methods));
 
-        mFishbookUser = FishbookUser.getCurrentUser();
+        Bundle bundle = getActivity().getIntent().getExtras();
+
+        if( bundle != null ) {
+
+            Serializable user = bundle.getSerializable("userData");
+            String uid = bundle.getString("uid");
+
+            if( user != null ) {
+
+                mUserData = (User) user;
+
+                mFishbookUser = new FishbookUser(uid, mUserData);
+
+                mFishbookUser.reloadUserInBackground();
+            }
+            else
+                mFishbookUser = FishbookUser.getCurrentUser();
+        }
+        else {
+
+            mFishbookUser = FishbookUser.getCurrentUser();
+        }
 
         initUserProfile();
 
@@ -127,21 +149,13 @@ public class EditProfileFragment extends Fragment {
         mMostChasedSpecies.setText(mUserData.getMostChasedSpeciesAsStringAsString());
         mFishingMethods.setText(mUserData.getFishingMethodsAsString());
 
+        mProfilePictures = null;
+
         if( mUserData.profilePictures != null && mUserData.profilePictures.size() > 0 ) {
 
-            if( mProfilePictures == null )
-                mProfilePictures = new ArrayList<String>();
+            mProfilePictures = mUserData.profilePictures;
 
-            mProfilePictures.clear();
-
-            for( int index = 0; index < mUserData.profilePictures.size(); index++ ) {
-
-                com.valchev.plamen.fishbook.models.Image profilePicture = mUserData.profilePictures.get(index);
-
-                mProfilePictures.add(profilePicture.highResUri);
-            }
-
-            com.valchev.plamen.fishbook.models.Image actualProfilePicture = mUserData.profilePictures.get(0);
+            com.valchev.plamen.fishbook.models.Image actualProfilePicture = mProfilePictures.get(0);
 
             DraweeController controller = Fresco.newDraweeControllerBuilder()
                     .setLowResImageRequest(ImageRequest.fromUri(actualProfilePicture.lowResUri))
@@ -160,19 +174,11 @@ public class EditProfileFragment extends Fragment {
             });
         }
 
+        mCoverPhotos = null;
+
         if( mUserData.coverPhotos != null && mUserData.coverPhotos.size() > 0 ) {
 
-            if( mCoverPhotos == null )
-                mCoverPhotos = new ArrayList<String>();
-
-            mCoverPhotos.clear();
-
-            for( int index = 0; index < mUserData.coverPhotos.size(); index++ ) {
-
-                com.valchev.plamen.fishbook.models.Image coverPhoto = mUserData.coverPhotos.get(index);
-
-                mCoverPhotos.add(coverPhoto.highResUri);
-            }
+            mCoverPhotos = mUserData.coverPhotos;
 
             com.valchev.plamen.fishbook.models.Image actualCoverPhoto = mUserData.coverPhotos.get(0);
 
@@ -194,15 +200,15 @@ public class EditProfileFragment extends Fragment {
         }
     }
 
-    void showImages(int nStartPosition, ArrayList<String> images) {
+    void showImages(int nStartPosition, ArrayList<com.valchev.plamen.fishbook.models.Image> images) {
 
         Activity activity = getActivity();
 
-        if( activity != null && activity instanceof MainActivity ) {
+        if( activity != null && activity instanceof FishbookActivity ) {
 
-            MainActivity mainActivity = (MainActivity) activity;
+            FishbookActivity fishbookActivity = (FishbookActivity) activity;
 
-            mainActivity.showImages(nStartPosition, images);
+            fishbookActivity.showImages(nStartPosition, images);
         }
     }
 
@@ -254,6 +260,11 @@ public class EditProfileFragment extends Fragment {
                 mPopupMenu.show();
             }
         });
+
+        boolean isCurrentUser = mFishbookUser.getUid().compareToIgnoreCase(FishbookUser.getCurrentUser().getUid()) == 0;
+
+        mActionButton.setVisibility( isCurrentUser ? View.VISIBLE : View.GONE );
+        mProgressBar.setVisibility( isCurrentUser ? mProgressBar.getVisibility() : View.GONE );
     }
 
     protected void editSettings() {

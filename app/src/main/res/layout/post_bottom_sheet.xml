@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.joanzapata.iconify.widget.IconButton
+        android:id="@+id/edit_post"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/tab_indicator_text"
+        android:background="?android:attr/selectableItemBackground"
+        android:text="{fa-pencil-square-o} Edit"
+        android:textSize="16sp"
+        android:shadowColor="#22000000"
+        android:shadowDx="3"
+        android:shadowDy="3"
+        android:shadowRadius="1"/>
+
+    <com.joanzapata.iconify.widget.IconButton
+        android:id="@+id/delete_post"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/tab_indicator_text"
+        android:background="?android:attr/selectableItemBackground"
+        android:text="{fa-trash-o} Delete"
+        android:textSize="16sp"
+        android:shadowColor="#22000000"
+        android:shadowDx="3"
+        android:shadowDy="3"
+        android:shadowRadius="1"/>
+
+</LinearLayout>

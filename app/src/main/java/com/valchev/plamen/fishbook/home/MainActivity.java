@@ -20,24 +20,20 @@ import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.rohitarya.fresco.facedetection.processor.core.FrescoFaceDetector;
 import com.stfalcon.frescoimageviewer.ImageViewer;
 import com.valchev.plamen.fishbook.R;
+import com.valchev.plamen.fishbook.models.Image;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
-
-    private static final String KEY_CURRENT_POSITION = "CURRENT_POSITION";
-    private static final String KEY_IMAGES = "IMAGES";
+public class MainActivity extends FishbookActivity {
 
     protected SearchView mSearchView;
     protected TextView mSearchViewHint;
     protected MainPagerAdapter mMainPagerAdapter;
     protected ViewPager mViewPager;
     protected TabLayout mTabLayout;
-    protected ArrayList<String> mImages;
-    protected int mCurrentPosition = -1;
     protected FloatingActionButton mAddNewPostFAB;
 
     @Override
@@ -88,26 +84,6 @@ public class MainActivity extends AppCompatActivity {
         super.onRestoreInstanceState(savedInstanceState);
 
         mSearchViewHint.setVisibility(mSearchView.isIconified() ? View.VISIBLE : View.GONE);
-
-        if (savedInstanceState != null) {
-
-            mCurrentPosition = savedInstanceState.getInt(KEY_CURRENT_POSITION);
-            mImages = savedInstanceState.getStringArrayList(KEY_IMAGES);
-
-            if( mCurrentPosition >= 0 && mImages != null ) {
-
-                showImages(mCurrentPosition, mImages);
-            }
-        }
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-
-        outState.putInt(KEY_CURRENT_POSITION, mCurrentPosition);
-        outState.putStringArrayList(KEY_IMAGES, mImages);
-
-        super.onSaveInstanceState(outState);
     }
 
     protected void initViewPager() {
@@ -172,28 +148,5 @@ public class MainActivity extends AppCompatActivity {
 
             mTabLayout.getTabAt(index).setIcon(drawable);
         }
-    }
-
-    public void showImages(int startPosition, ArrayList<String> images) {
-
-        mImages = images;
-        mCurrentPosition = startPosition;
-
-        new ImageViewer.Builder(this, mImages)
-                .setStartPosition(mCurrentPosition)
-                .setImageMarginPx(20)
-                .setImageChangeListener(new ImageViewer.OnImageChangeListener() {
-                    @Override
-                    public void onImageChange(int position) {
-                        mCurrentPosition = position;
-                    }
-                })
-                .setOnDismissListener(new ImageViewer.OnDismissListener() {
-                    @Override
-                    public void onDismiss() {
-                        mCurrentPosition = -1;
-                    }
-                })
-                .show();
     }
 }

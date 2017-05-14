@@ -4,6 +4,7 @@ package com.valchev.plamen.fishbook.models;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -11,7 +12,7 @@ import java.util.ArrayList;
  */
 
 @IgnoreExtraProperties
-public class User {
+public class User implements Serializable {
 
     public PersonalInformation personalInformation;
     public ArrayList<Image> coverPhotos;

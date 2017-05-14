@@ -53,6 +53,14 @@ public class FishbookUser implements ValueEventListener, OnSuccessListener<Array
         mStorageReference = FirebaseStorage.getInstance().getReference();
     }
 
+    public FishbookUser(String uid, User userData) {
+
+        mUserData = userData;
+        mUid = uid;
+        mDatabaseReference = FirebaseDatabase.getInstance().getReference();
+        mStorageReference = FirebaseStorage.getInstance().getReference();
+    }
+
     public static void loadCurrentUserInBackground(final UserAuthStateListener userAuthStateListener) {
 
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();

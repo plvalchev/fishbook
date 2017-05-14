@@ -77,13 +77,21 @@ public class ImageLinearRecyclerViewAdapter extends ImageRecyclerViewAdapter {
             mTextWatcher = new CustomTextWatcher();
 
             mCaption.addTextChangedListener(mTextWatcher);
+
+            mImageView.setOnClickListener(this);
         }
     }
 
-    public ImageLinearRecyclerViewAdapter(ArrayList<com.nguyenhoanglam.imagepicker.model.Image> originImages,
+    public ImageLinearRecyclerViewAdapter(FishbookActivity fishbookActivity) {
+
+        super(fishbookActivity);
+    }
+
+    public ImageLinearRecyclerViewAdapter(FishbookActivity fishbookActivity,
+                                          ArrayList<com.nguyenhoanglam.imagepicker.model.Image> originImages,
                                           ArrayList<Image> imageList) {
 
-        super(originImages, imageList);
+        super(fishbookActivity, originImages, imageList);
     }
 
     @Override

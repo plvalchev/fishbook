@@ -7,6 +7,8 @@ import android.content.Context;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.imagepipeline.core.ImagePipelineConfig;
 import com.facebook.imagepipeline.decoder.SimpleProgressiveJpegConfig;
+import com.joanzapata.iconify.Iconify;
+import com.joanzapata.iconify.fonts.FontAwesomeModule;
 
 public class FishbookApplication extends Application {
 
@@ -21,6 +23,8 @@ public class FishbookApplication extends Application {
     public void onCreate() {
 
         super.onCreate();
+
+        Iconify.with(new FontAwesomeModule());
 
         //
         mContext = this;
