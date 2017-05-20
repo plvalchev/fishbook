@@ -40,13 +40,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:id="@+id/like_comments_layout"
             android:padding="8dp">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.5"
-                android:text="Plamen Valchev and 6 others"
+                android:id="@+id/likes"
+                android:text="Be the first to like this"
                 android:textSize="12sp"
                 android:gravity="left"/>
 
@@ -54,7 +56,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.5"
-                android:text="2 Comments"
+                android:id="@+id/comments"
                 android:textSize="12sp"
                 android:gravity="right"/>
 
@@ -76,6 +78,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.5"
+                android:id="@+id/like_button"
                 android:textColor="@android:color/tab_indicator_text"
                 android:background="?android:attr/selectableItemBackground"
                 android:text="{fa-thumbs-up} Like"
@@ -90,6 +93,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.5"
+                android:id="@+id/comment_button"
                 android:textColor="@android:color/tab_indicator_text"
                 android:background="?android:attr/selectableItemBackground"
                 android:text="{fa-comment} Comment"

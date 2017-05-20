@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 public class Image implements Serializable {
 
+    public String id;
     public String caption;
     public String lowResUri;
     public String midResUri;

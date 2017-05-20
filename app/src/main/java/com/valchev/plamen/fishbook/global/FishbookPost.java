@@ -98,6 +98,7 @@ public class FishbookPost implements OnSuccessListener<ArrayList<Image>>, ValueE
 
         childUpdates.put("/posts/" + mPost.key, null);
         childUpdates.put("/user-posts/" + mPost.userID + "/" + mPost.key, null);
+        childUpdates.put("/likes/posts/" + mPost.key, null);
 
         mDatabaseReference.updateChildren(childUpdates);
     }
@@ -115,6 +116,21 @@ public class FishbookPost implements OnSuccessListener<ArrayList<Image>>, ValueE
         if( mPost.key == null ) {
 
             mPost.key = mDatabaseReference.child("posts").push().getKey();
+        }
+
+        if( mPost.images != null ) {
+
+            int size = mPost.images.size();
+
+            for( int index = 0; index < size; index++ ) {
+
+                Image image = mPost.images.get(index);
+
+                if (image.id == null || image.id.isEmpty()) {
+
+                    image.id = mDatabaseReference.child("posts").child(mPost.key).child("images").push().getKey();
+                }
+            }
         }
 
         Map<String, Object> postValues = mPost.toMap();

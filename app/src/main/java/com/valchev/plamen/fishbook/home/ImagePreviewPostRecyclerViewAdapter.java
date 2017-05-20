@@ -1,17 +1,18 @@
 package com.valchev.plamen.fishbook.home;
 
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import com.google.firebase.database.DatabaseReference;
+import com.joanzapata.iconify.widget.IconButton;
 import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.valchev.plamen.fishbook.R;
+import com.valchev.plamen.fishbook.global.FishbookComment;
+import com.valchev.plamen.fishbook.global.FishbookLike;
 import com.valchev.plamen.fishbook.models.Image;
-
-import java.util.ArrayList;
 
 /**
  * Created by admin on 14.5.2017 г..
@@ -22,6 +23,7 @@ public class ImagePreviewPostRecyclerViewAdapter extends ImageRecyclerViewAdapte
     public class ImageViewHolder extends ImageRecyclerViewAdapter.ImageViewHolder {
 
         protected ExpandableTextView mDescription;
+        protected SocialPaneController mSocialPaneController;
 
         public ImageViewHolder(View itemView) {
 
@@ -29,8 +31,25 @@ public class ImagePreviewPostRecyclerViewAdapter extends ImageRecyclerViewAdapte
 
             mDescription = (ExpandableTextView) itemView.findViewById(R.id.post_description).findViewById(R.id.expand_text_view);
 
-
             mImageView.setOnClickListener(this);
+
+            IconButton likeButton = (IconButton) itemView.findViewById(R.id.like_button);
+            IconButton commentButton = (IconButton) itemView.findViewById(R.id.comment_button);
+            LinearLayout likeCommentsLayout = (LinearLayout) itemView.findViewById(R.id.like_comments_layout);
+            TextView likes = (TextView) itemView.findViewById(R.id.likes);
+            TextView comments = (TextView) itemView.findViewById(R.id.comments);
+
+            mSocialPaneController = new SocialPaneController(likeCommentsLayout, likeButton, commentButton, likes, comments, mFishbookActivity);
+        }
+
+        public void bindImage(Image image) {
+
+            mDescription.setText(image.caption);
+
+            DatabaseReference commentsDatabaseReference = FishbookComment.getPostCommentsDatabaseReference(image.id);
+            DatabaseReference likesDatabaseReference = FishbookLike.getPostLikesDatabaseReference(image.id);
+
+            mSocialPaneController.setDatabaseReferences(commentsDatabaseReference, likesDatabaseReference);
         }
     }
 
@@ -56,6 +75,6 @@ public class ImagePreviewPostRecyclerViewAdapter extends ImageRecyclerViewAdapte
         Image image = mImageList.get(position);
         ImageViewHolder imageViewHolder = (ImageViewHolder) viewHolder;
 
-        imageViewHolder.mDescription.setText(image.caption);
+        imageViewHolder.bindImage(image);
     }
 }

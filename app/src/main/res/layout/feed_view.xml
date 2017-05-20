@@ -108,6 +108,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:id="@+id/like_comments_layout"
             android:orientation="horizontal"
             android:padding="8dp">
 
@@ -115,7 +116,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.5"
-                android:text="Plamen Valchev and 6 others"
+                android:id="@+id/likes"
+                android:text="Be the first to like this"
                 android:textSize="12sp"
                 android:gravity="left"/>
 
@@ -123,7 +125,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.5"
-                android:text="2 Comments"
+                android:id="@+id/comments"
                 android:textSize="12sp"
                 android:gravity="right"/>
 
@@ -144,6 +146,7 @@
             <com.joanzapata.iconify.widget.IconButton
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:id="@+id/like_button"
                 android:layout_weight="0.5"
                 android:textColor="@android:color/tab_indicator_text"
                 android:background="?android:attr/selectableItemBackground"
@@ -159,6 +162,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.5"
+                android:id="@+id/comment_button"
                 android:textColor="@android:color/tab_indicator_text"
                 android:background="?android:attr/selectableItemBackground"
                 android:text="{fa-comment} Comment"

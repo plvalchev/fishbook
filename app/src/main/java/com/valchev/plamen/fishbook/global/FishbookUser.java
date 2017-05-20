@@ -109,6 +109,36 @@ public class FishbookUser implements ValueEventListener, OnSuccessListener<Array
 
         DatabaseReference userDatabaseReference = getUserDatabaseReference();
 
+        if( mUserData.profilePictures != null ) {
+
+            int size = mUserData.profilePictures.size();
+
+            for( int index = 0; index < size; index++ ) {
+
+                Image image = mUserData.profilePictures.get(index);
+
+                if (image.id == null || image.id.isEmpty()) {
+
+                    image.id = userDatabaseReference.child("profilePictures").push().getKey();
+                }
+            }
+        }
+
+        if( mUserData.coverPhotos != null ) {
+
+            int size = mUserData.coverPhotos.size();
+
+            for( int index = 0; index < size; index++ ) {
+
+                Image image = mUserData.coverPhotos.get(index);
+
+                if (image.id == null || image.id.isEmpty()) {
+
+                    image.id = userDatabaseReference.child("coverPhotos").push().getKey();
+                }
+            }
+        }
+
         userDatabaseReference.setValue(mUserData);
 
         Log.d( "saveUserData", "Save user data end" );

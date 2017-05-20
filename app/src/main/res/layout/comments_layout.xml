@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:fillViewport="true"
+        android:paddingBottom="80dp"
+        android:id="@+id/comments_layout">
+
+        <com.joanzapata.iconify.widget.IconTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:id="@+id/likes"
+            android:text="Be the first to like this"
+            android:textSize="18sp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0.1dp"
+            android:layout_margin="8dp"
+            android:background="@android:color/darker_gray"/>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:minHeight="800dp"
+            android:overScrollMode="never"
+            app:layoutManager="LinearLayoutManager"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@android:color/white"
+        android:padding="16dp"
+        app:layout_anchor="@id/comments_layout"
+        app:layout_anchorGravity="bottom">
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.9"
+            android:id="@+id/write_comment"
+            android:hint="Write comment"
+            android:minLines="1"/>
+
+        <com.joanzapata.iconify.widget.IconButton
+            android:layout_width="48dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/write_comment_button"
+            android:textColor="@android:color/tab_indicator_text"
+            android:background="?android:attr/selectableItemBackground"
+            android:text="{fa-location-arrow}"
+            android:textSize="24sp"
+            android:shadowColor="#22000000"
+            android:shadowDx="3"
+            android:shadowDy="3"
+            android:shadowRadius="1"
+            android:layout_gravity="bottom"
+            android:gravity="center"/>
+
+    </LinearLayout>
+
+</android.support.design.widget.CoordinatorLayout>

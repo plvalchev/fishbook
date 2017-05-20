@@ -2,6 +2,7 @@ package com.valchev.plamen.fishbook.home;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.View;
@@ -18,8 +19,11 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
+import com.joanzapata.iconify.widget.IconButton;
 import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.valchev.plamen.fishbook.R;
+import com.valchev.plamen.fishbook.global.FishbookComment;
+import com.valchev.plamen.fishbook.global.FishbookLike;
 import com.valchev.plamen.fishbook.global.FishbookPost;
 import com.valchev.plamen.fishbook.global.FishbookUser;
 import com.valchev.plamen.fishbook.models.Image;
@@ -34,7 +38,30 @@ import java.util.ArrayList;
 
 public class FeedRecyclerViewAdapter extends FirebaseRecyclerAdapter<Post, FeedRecyclerViewAdapter.FeedViewHolder> {
 
-    public static class FeedViewHolder extends RecyclerView.ViewHolder implements ValueEventListener, View.OnClickListener {
+    public static class FeedViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+        private class AuthorValueEventListener implements ValueEventListener {
+
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                if( mPost.userID.compareToIgnoreCase(dataSnapshot.getKey()) != 0 ) {
+                    return;
+                }
+
+                mUserData = dataSnapshot.getValue(User.class);
+
+                if( mUserData == null )
+                    mUserData = new User();
+
+                bindUserData();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        }
 
         protected LinearLayout mRecyclerViewLayout;
         protected RecyclerView mMainRecyclerView;
@@ -52,6 +79,8 @@ public class FeedRecyclerViewAdapter extends FirebaseRecyclerAdapter<Post, FeedR
         protected User mUserData;
         protected ImageButton mBottomSheetButton;
         protected LinearLayout mUserInfoLayout;
+        protected AuthorValueEventListener mAuthorValueEventListener;
+        protected SocialPaneController mSocialPaneController;
         public PostBottomSheetDialogFragment mPostBottomSheetDialogFragment;
         public FishbookActivity mActivity;
 
@@ -68,6 +97,14 @@ public class FeedRecyclerViewAdapter extends FirebaseRecyclerAdapter<Post, FeedR
             mRecyclerViewLayout = (LinearLayout) itemView.findViewById(R.id.recycler_view_layout);
             mBottomSheetButton =  (ImageButton) itemView.findViewById(R.id.bottom_sheet);
             mUserInfoLayout = (LinearLayout) itemView.findViewById(R.id.user_info_layout);
+
+            IconButton likeButton = (IconButton) itemView.findViewById(R.id.like_button);
+            IconButton commentButton = (IconButton) itemView.findViewById(R.id.comment_button);
+            LinearLayout likeCommentsLayout = (LinearLayout) itemView.findViewById(R.id.like_comments_layout);
+            TextView likes = (TextView) itemView.findViewById(R.id.likes);
+            TextView comments = (TextView) itemView.findViewById(R.id.comments);
+
+            mSocialPaneController = new SocialPaneController(likeCommentsLayout, likeButton, commentButton, likes, comments, mActivity);
 
             mMainRecyclerViewAdapter = new ImageGridRecyclerViewAdapter(this, ImageGridRecyclerViewAdapter.INFINITY);
             mSubRecyclerViewAdapter = new ImageGridRecyclerViewAdapter(this, 3);
@@ -86,6 +123,8 @@ public class FeedRecyclerViewAdapter extends FirebaseRecyclerAdapter<Post, FeedR
             mBottomSheetButton.setOnClickListener(this);
             mUserInfoLayout.setOnClickListener(this);
             mProfilePicture.setOnClickListener(this);
+
+            mAuthorValueEventListener = new AuthorValueEventListener();
         }
 
         public void bindPost(Post post) {
@@ -102,12 +141,12 @@ public class FeedRecyclerViewAdapter extends FirebaseRecyclerAdapter<Post, FeedR
 
                 if( mUserDatabaseReference != null ) {
 
-                    mUserDatabaseReference.removeEventListener(this);
+                    mUserDatabaseReference.removeEventListener(mAuthorValueEventListener);
                 }
 
                 mUserDatabaseReference = FishbookUser.getUserDatabaseReference(mPost.userID);
 
-                mUserDatabaseReference.addValueEventListener(this);
+                mUserDatabaseReference.addValueEventListener(mAuthorValueEventListener);
             }
             else {
 
@@ -120,6 +159,12 @@ public class FeedRecyclerViewAdapter extends FirebaseRecyclerAdapter<Post, FeedR
 
             mPostDate.setText(mPost.dateTime);
             mDescription.setText(mPost.description);
+
+            DatabaseReference commentsDatabaseReference = FishbookComment.getPostCommentsDatabaseReference(mPost.key);
+            DatabaseReference likesDatabaseReference = FishbookLike.getPostLikesDatabaseReference(mPost.key);
+
+            mSocialPaneController.setDatabaseReferences(commentsDatabaseReference, likesDatabaseReference);
+            mSocialPaneController.setActivity(mActivity);
 
             if( mPost.images == null || mPost.images.size() == 0 ) {
 
@@ -171,21 +216,6 @@ public class FeedRecyclerViewAdapter extends FirebaseRecyclerAdapter<Post, FeedR
             }
         }
 
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
-
-            if( mPost.userID.compareToIgnoreCase(dataSnapshot.getKey()) != 0 ) {
-                return;
-            }
-
-            mUserData = dataSnapshot.getValue(User.class);
-
-            if( mUserData == null )
-                mUserData = new User();
-
-            bindUserData();
-        }
-
         private void bindUserData() {
 
             String displayName = null;
@@ -213,11 +243,6 @@ public class FeedRecyclerViewAdapter extends FirebaseRecyclerAdapter<Post, FeedR
         }
 
         @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
-
-        @Override
         public void onClick(View v) {
 
             if( mPost == null ) {
@@ -240,7 +265,7 @@ public class FeedRecyclerViewAdapter extends FirebaseRecyclerAdapter<Post, FeedR
 
                 Intent intent = new Intent(mActivity, UserProfileActivity.class);
 
-                if( mPost.userID != FishbookUser.getCurrentUser().getUid() ) {
+                if( mPost.userID.compareToIgnoreCase(FishbookUser.getCurrentUser().getUid()) != 0 ) {
 
                     Bundle bundle = new Bundle();
 
@@ -279,7 +304,7 @@ public class FeedRecyclerViewAdapter extends FirebaseRecyclerAdapter<Post, FeedR
         }
     }
 
-    protected FishbookActivity mActivity;
+    private FishbookActivity mActivity;
 
     public FeedRecyclerViewAdapter(FishbookActivity activity) {
         super(Post.class, R.layout.feed_view, FeedViewHolder.class, FishbookPost.getPostsDatabaseReference());
