@@ -20,20 +20,33 @@ public class FishbookActivity extends AppCompatActivity {
 
     protected ArrayList<Image> mImages;
     protected int mCurrentPosition = -1;
+    protected ImageOverlayView mImageOverlayView;
 
     public void showImages(int startPosition, ArrayList<Image> images) {
 
+        mImageOverlayView = new ImageOverlayView(this);
         mImages = images;
         mCurrentPosition = startPosition;
 
         new ImageViewer.Builder(this, mImages)
                 .setStartPosition(mCurrentPosition)
                 .setImageMarginPx(20)
+                .setOverlayView(mImageOverlayView)
+                .hideStatusBar(false)
+//                .setContainerPaddingPx(0, 0, 0, 0)
                 .setImageChangeListener(new ImageViewer.OnImageChangeListener() {
+
                     @Override
                     public void onImageChange(int position) {
+
                         mCurrentPosition = position;
+
+                        Image image = mImages.get(position);
+
+                        mImageOverlayView.bindImage(image);
+
                     }
+
                 })
                 .setOnDismissListener(new ImageViewer.OnDismissListener() {
                     @Override

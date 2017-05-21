@@ -46,8 +46,8 @@ public class ImagePreviewPostRecyclerViewAdapter extends ImageRecyclerViewAdapte
 
             mDescription.setText(image.caption);
 
-            DatabaseReference commentsDatabaseReference = FishbookComment.getPostCommentsDatabaseReference(image.id);
-            DatabaseReference likesDatabaseReference = FishbookLike.getPostLikesDatabaseReference(image.id);
+            DatabaseReference commentsDatabaseReference = FishbookComment.getImageCommentsDatabaseReference(image.id);
+            DatabaseReference likesDatabaseReference = FishbookLike.getImageLikesDatabaseReference(image.id);
 
             mSocialPaneController.setDatabaseReferences(commentsDatabaseReference, likesDatabaseReference);
         }

@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -27,6 +28,7 @@ import com.nguyenhoanglam.imagepicker.activity.ImagePicker;
 import com.nguyenhoanglam.imagepicker.activity.ImagePickerActivity;
 import com.nguyenhoanglam.imagepicker.model.Image;
 import com.valchev.plamen.fishbook.R;
+import com.valchev.plamen.fishbook.chat.ChatActivity;
 import com.valchev.plamen.fishbook.global.FishbookUser;
 import com.valchev.plamen.fishbook.models.User;
 
@@ -59,6 +61,7 @@ public class EditProfileFragment extends Fragment {
     protected ArrayList<com.valchev.plamen.fishbook.models.Image> mCoverPhotos;
     protected int mProfilePicturesCurrentPosition;
     protected int mCoverPhotosCurrentPosition;
+    protected Button mSendMessageButton;
 
     public EditProfileFragment() {
 
@@ -88,6 +91,7 @@ public class EditProfileFragment extends Fragment {
         mActionButton = (FloatingActionButton) view.findViewById(R.id.edit_profile_button);
         mDisplayName = (TextView) view.findViewById(R.id.display_name);
         mProgressBar = (ProgressBar) view.findViewById(R.id.edit_profile_progress);
+        mSendMessageButton = (Button) view.findViewById(R.id.send_message);
 
         topFishingRegionsTitle.setText(getResources().getString(R.string.regions));
         mostChasedSpeciesTitle.setText(getResources().getString(R.string.chased_species));
@@ -138,6 +142,22 @@ public class EditProfileFragment extends Fragment {
         });
 
         initPopupMenu();
+
+        mSendMessageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Activity activity = getActivity();
+                Intent intent = new Intent(activity, ChatActivity.class);
+
+                Bundle bundle = new Bundle();
+                bundle.putString("receiver", mFishbookUser.getUid());
+
+                intent.putExtras(bundle);
+
+                activity.startActivity(intent);
+            }
+        });
 
         return view;
     }

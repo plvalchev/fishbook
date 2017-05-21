@@ -38,12 +38,12 @@
             <android.support.design.widget.TabItem
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
-                android:icon="@drawable/friends_selector"/>
+                android:icon="@drawable/chat_selector"/>
 
-            <android.support.design.widget.TabItem
-                android:layout_height="wrap_content"
-                android:layout_width="match_parent"
-                android:icon="@drawable/notifications_selector"/>
+            <!--<android.support.design.widget.TabItem-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:icon="@drawable/notifications_selector"/>-->
 
             <android.support.design.widget.TabItem
                 android:layout_height="wrap_content"

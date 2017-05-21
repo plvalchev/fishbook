@@ -564,6 +564,15 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
 
         mPost.images = mImageList;
 
+        if( mPost.images != null && mPost.images.size() == 1 ) {
+
+            if( mPost.description != null && mPost.images.get(0).caption == null ) {
+                mPost.images.get(0).caption = mPost.description;
+            } else if( mPost.description == null ) {
+                mPost.description = mPost.images.get(0).caption;
+            }
+        }
+
         List<? extends ChipInterface> selectedChipList = mFishingRegionChipsInput.getSelectedChipList();
 
         for (ChipInterface chip: selectedChipList) {

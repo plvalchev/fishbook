@@ -21,6 +21,7 @@ public class Post implements Serializable {
     public ArrayList<Specie> species;
     public ArrayList<FishingMethod> fishingMethods;
     public ArrayList<Image> images;
+    public ArrayList<String> likes;
 
     @Exclude
     public Map<String, Object> toMap() {

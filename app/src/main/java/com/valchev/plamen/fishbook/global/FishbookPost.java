@@ -134,8 +134,8 @@ public class FishbookPost implements OnSuccessListener<ArrayList<Image>>, ValueE
         }
 
         Map<String, Object> postValues = mPost.toMap();
-
         Map<String, Object> childUpdates = new HashMap<>();
+
         childUpdates.put("/posts/" + mPost.key, postValues);
         childUpdates.put("/user-posts/" + mPost.userID + "/" + mPost.key, postValues);
 

@@ -31,6 +31,7 @@ public class SocialPaneController implements  View.OnClickListener {
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
 
             mCommentsCount++;
+
             setCommentsText();
         }
 
@@ -55,24 +56,6 @@ public class SocialPaneController implements  View.OnClickListener {
         @Override
         public void onCancelled(DatabaseError databaseError) {
 
-        }
-
-        public void setCommentsText() {
-
-            switch (mCommentsCount) {
-
-                case 0:
-                    mComments.setText(null);
-                    break;
-
-                case 1:
-                    mComments.setText("1 Comment");
-                    break;
-
-                default:
-                    mComments.setText(mCommentsCount + " Comments");
-                    break;
-            }
         }
     }
 
@@ -123,7 +106,8 @@ public class SocialPaneController implements  View.OnClickListener {
 
                 isLikedByCurrentUser = true;
 
-                mLikeButton.setText("{fa-thumbs-down} Dislike");
+                if( mLikeButton != null )
+                    mLikeButton.setText("{fa-thumbs-down} Dislike");
 
                 setLikeText("You");
 
@@ -151,7 +135,9 @@ public class SocialPaneController implements  View.OnClickListener {
 
             if( userID.compareToIgnoreCase(FishbookUser.getCurrentUser().getUid()) == 0 ) {
 
-                mLikeButton.setText("{fa-thumbs-up} Like");
+                if( mLikeButton != null )
+                    mLikeButton.setText("{fa-thumbs-up} Like");
+
                 isLikedByCurrentUser = false;
             }
 
@@ -166,39 +152,6 @@ public class SocialPaneController implements  View.OnClickListener {
         @Override
         public void onCancelled(DatabaseError databaseError) {
 
-        }
-
-        public void setLikeText(String userName) {
-
-            mPreviousLikedUserName = mLastLikedUserName;
-            mLastLikedUserName = userName;
-
-            if( mLikes == null )
-                return;
-
-            if( isLikedByCurrentUser )
-                userName = "You";
-
-            boolean isIconTextView = mLikes instanceof IconTextView;
-            String prefix = isIconTextView ? "{fa-thumbs-up} " : "";
-
-            switch (mLikesCount) {
-                case 0:
-                    mLikes.setText("Be the first to like this");
-                    break;
-
-                case 1:
-                    mLikes.setText(prefix + userName + " liked this");
-                    break;
-
-                case 2:
-                    mLikes.setText(prefix + userName + " and 1 others");
-                    break;
-
-                default:
-                    mLikes.setText(prefix + userName + " and " + String.valueOf(mLikesCount - 1) + " others liked this");
-                    break;
-            }
         }
     }
 
@@ -274,6 +227,8 @@ public class SocialPaneController implements  View.OnClickListener {
 
         mCommentsCount = 0;
 
+        setCommentsText();
+
         if( mCommentsDatabaseReference != null ) {
 
             mCommentsDatabaseReference.removeEventListener(mCommentsChildEventListener);
@@ -298,6 +253,8 @@ public class SocialPaneController implements  View.OnClickListener {
         if( mLikeButton != null )
             mLikeButton.setText("{fa-thumbs-up} Like");
 
+        setLikeText("John doe");
+
         if( mLikesDatabaseReference != null )
             mLikesDatabaseReference.addChildEventListener(mLikesChildEventListener);
     }
@@ -305,6 +262,60 @@ public class SocialPaneController implements  View.OnClickListener {
     public void setActivity(AppCompatActivity activity) {
 
         this.mActivity = activity;
+    }
+
+    private void setLikeText(String userName) {
+
+        mPreviousLikedUserName = mLastLikedUserName;
+        mLastLikedUserName = userName;
+
+        if( mLikes == null )
+            return;
+
+        if( isLikedByCurrentUser )
+            userName = "You";
+
+        boolean isIconTextView = mLikes instanceof IconTextView;
+        String prefix = isIconTextView ? "{fa-thumbs-up} " : "";
+
+        switch (mLikesCount) {
+            case 0:
+                mLikes.setText("Be the first to like this");
+                break;
+
+            case 1:
+                mLikes.setText(prefix + userName + " liked this");
+                break;
+
+            case 2:
+                mLikes.setText(prefix + userName + " and 1 others");
+                break;
+
+            default:
+                mLikes.setText(prefix + userName + " and " + String.valueOf(mLikesCount - 1) + " others liked this");
+                break;
+        }
+    }
+
+    private void setCommentsText() {
+
+        if( mComments == null )
+            return;
+
+        switch (mCommentsCount) {
+
+            case 0:
+                mComments.setText(null);
+                break;
+
+            case 1:
+                mComments.setText("1 Comment");
+                break;
+
+            default:
+                mComments.setText(mCommentsCount + " Comments");
+                break;
+        }
     }
 
 }

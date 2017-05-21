@@ -51,6 +51,7 @@ dependencies {
     compile 'com.google.android.gms:play-services-vision:10.0.1'
     compile 'com.github.aryarohit07:fresco-facedetection-processor:0.1.1'
     compile 'com.joanzapata.iconify:android-iconify-fontawesome:2.2.2' // (v4.5)
+    compile 'com.github.stfalcon:chatkit:0.2.1'
 
     testCompile 'junit:junit:4.12'
 }

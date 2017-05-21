@@ -4,6 +4,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
+import com.valchev.plamen.fishbook.chat.ChatFragment;
+
 public class MainPagerAdapter extends FragmentPagerAdapter {
 
     public MainPagerAdapter(FragmentManager fm) {
@@ -22,6 +24,10 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
                 fragment = new FeedFragment();
                 break;
 
+            case 1:
+                fragment = new ChatFragment();
+                break;
+
             default:
                 fragment = new EditProfileFragment();
                 break;
@@ -33,6 +39,6 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
     @Override
     public int getCount() {
 
-        return 4;
+        return 3;
     }
 }

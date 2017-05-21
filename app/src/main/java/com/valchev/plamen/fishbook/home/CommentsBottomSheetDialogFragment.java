@@ -7,15 +7,11 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.BottomSheetDialog;
 import android.support.design.widget.BottomSheetDialogFragment;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.widget.RecyclerView;
-import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.google.firebase.database.DatabaseReference;
 import com.joanzapata.iconify.widget.IconButton;
@@ -25,7 +21,6 @@ import com.valchev.plamen.fishbook.global.FishbookUser;
 import com.valchev.plamen.fishbook.global.FishbookUtils;
 import com.valchev.plamen.fishbook.models.Comment;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**

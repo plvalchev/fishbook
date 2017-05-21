@@ -3,9 +3,11 @@ package com.valchev.plamen.fishbook.models;
 
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
+import com.stfalcon.chatkit.commons.models.IUser;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * Created by admin on 9.4.2017 г..

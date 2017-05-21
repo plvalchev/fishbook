@@ -284,22 +284,7 @@ public class FeedRecyclerViewAdapter extends FirebaseRecyclerAdapter<Post, FeedR
                     return;
                 }
 
-                if( mPost.images.size() == 1 ) {
-
-                    mActivity.showImages(0, mPost.images);
-                }
-                else {
-
-                    Intent intent = new Intent(mActivity, PostPreviewActivity.class);
-                    Bundle bundle = new Bundle();
-
-                    bundle.putSerializable("userData", mUserData);
-                    bundle.putSerializable("post", mPost);
-
-                    intent.putExtras(bundle);
-
-                    mActivity.startActivity(intent);
-                }
+                mActivity.showImages(0, mPost.images);
             }
         }
     }

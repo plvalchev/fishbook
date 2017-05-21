@@ -1,9 +1,13 @@
 package com.valchev.plamen.fishbook.models;
 
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.Exclude;
+import com.valchev.plamen.fishbook.global.FishbookUser;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by admin on 23.4.2017 г..
@@ -12,6 +16,7 @@ import java.util.ArrayList;
 public class Image implements Serializable {
 
     public String id;
+    public String userID;
     public String caption;
     public String lowResUri;
     public String midResUri;
@@ -22,9 +27,17 @@ public class Image implements Serializable {
 
     public Image() {
 
+        FishbookUser fishbookUser = FishbookUser.getCurrentUser();
+
+        if( fishbookUser != null ) {
+
+            userID = fishbookUser.getUid();
+        }
     }
 
     public Image(String lowResUri, String midResUri, String highResUri) {
+
+        this();
 
         this.lowResUri = lowResUri;
         this.midResUri = midResUri;
@@ -32,6 +45,8 @@ public class Image implements Serializable {
     }
 
     public Image(String lowResUri, String midResUri, String highResUri, String path) {
+
+        this();
 
         this.lowResUri = lowResUri;
         this.midResUri = midResUri;
@@ -64,5 +79,20 @@ public class Image implements Serializable {
             return false;
 
         return true;
+    }
+
+    @Exclude
+    public Map<String, Object> toMap() {
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        result.put("id", id);
+        result.put("userID", userID);
+        result.put("caption", caption);
+        result.put("lowResUri", lowResUri);
+        result.put("midResUri", midResUri);
+        result.put("highResUri", highResUri);
+
+        return result;
     }
 }

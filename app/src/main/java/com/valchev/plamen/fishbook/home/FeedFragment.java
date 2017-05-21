@@ -42,6 +42,8 @@ public class FeedFragment extends Fragment {
     public void onDestroy() {
 
         super.onDestroy();
-        mFeedRecyclerViewAdapter.cleanup();
+
+        if( mFeedRecyclerViewAdapter != null )
+            mFeedRecyclerViewAdapter.cleanup();
     }
 }
