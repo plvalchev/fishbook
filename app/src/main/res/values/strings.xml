@@ -14,7 +14,7 @@
     <string name="explore_pictures_and_catches">Explore pictures and catches you might like</string>
     <string name="discover_interesting_anglers">Discover interesting anglers</string>
     <string name="title_activity_sign_up">Sign up</string>
-    <string name="search_hint">Search for fishing adventures...</string>
+    <string name="search_hint">Search for species, regions, etc...</string>
 
     <string name="prompt_name">Name</string>
     <string name="prompt_email">Email</string>

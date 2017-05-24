@@ -24,6 +24,8 @@ import com.stfalcon.chatkit.dialogs.DialogsListAdapter;
 import com.valchev.plamen.fishbook.R;
 import com.valchev.plamen.fishbook.global.FishbookUser;
 import com.valchev.plamen.fishbook.global.FishbookValueEventListener;
+import com.valchev.plamen.fishbook.home.FishbookActivity;
+import com.valchev.plamen.fishbook.home.MainActivity;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -102,6 +104,13 @@ public class ChatFragment extends Fragment implements ValueChangeListener<Collec
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("user-chats").child(FishbookUser.getCurrentUser().getUid());
 
         chatDialogChildEventListener = new ChatDialogChildEventListener(databaseReference, this);
+
+        FishbookActivity activity = (FishbookActivity)getActivity();
+
+        if( activity instanceof MainActivity) {
+
+            ((MainActivity) activity).showFAB(false);
+        }
 
         return view;
     }

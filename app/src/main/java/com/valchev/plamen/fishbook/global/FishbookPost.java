@@ -11,8 +11,11 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.valchev.plamen.fishbook.models.FishingMethod;
+import com.valchev.plamen.fishbook.models.FishingRegion;
 import com.valchev.plamen.fishbook.models.Image;
 import com.valchev.plamen.fishbook.models.Post;
+import com.valchev.plamen.fishbook.models.Specie;
 import com.valchev.plamen.fishbook.models.User;
 
 import java.util.ArrayList;
@@ -103,14 +106,6 @@ public class FishbookPost implements OnSuccessListener<ArrayList<Image>>, ValueE
         mDatabaseReference.updateChildren(childUpdates);
     }
 
-    protected void reloadPostInBackground() {
-
-        DatabaseReference databaseReference = mDatabaseReference.child("posts").child(mPost.key);
-
-        databaseReference.removeEventListener(this);
-        databaseReference.addValueEventListener(this);
-    }
-
     protected void savePostInFirebase() {
 
         if( mPost.key == null ) {
@@ -139,20 +134,43 @@ public class FishbookPost implements OnSuccessListener<ArrayList<Image>>, ValueE
         childUpdates.put("/posts/" + mPost.key, postValues);
         childUpdates.put("/user-posts/" + mPost.userID + "/" + mPost.key, postValues);
 
+        if( mPost.species != null ) {
+
+            for (Specie specie : mPost.species) {
+
+                childUpdates.put("/post-search-index/" + specie.name.toLowerCase() + "/" + mPost.key, true);
+            }
+        }
+
+        if( mPost.fishingMethods != null ) {
+
+            for (FishingMethod method : mPost.fishingMethods) {
+
+                childUpdates.put("/post-search-index/" + method.name.toLowerCase() + "/" + mPost.key, true);
+            }
+        }
+
+        if( mPost.fishingRegions != null ) {
+
+            for (FishingRegion region : mPost.fishingRegions) {
+
+                childUpdates.put("/post-search-index/" + region.name.toLowerCase() + "/" + mPost.key, true);
+            }
+        }
+
         mDatabaseReference.updateChildren(childUpdates);
-    }
-
-    public static DatabaseReference getCurrentUserPostsDatabaseReference() {
-
-        FishbookUser currentUser = FishbookUser.getCurrentUser();
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("user-posts").child(currentUser.getUid());
-
-        return databaseReference;
     }
 
     public static DatabaseReference getPostsDatabaseReference() {
 
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("posts");
+
+        return databaseReference;
+    }
+
+    public static DatabaseReference getUserPostsDatabaseReference(String uid) {
+
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("user-posts").child(uid);
 
         return databaseReference;
     }

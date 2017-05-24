@@ -17,32 +17,15 @@
         android:textSize="14sp"
         android:textStyle="bold"/>
 
-    <com.ms.square.android.expandabletextview.ExpandableTextView
-        android:id="@+id/expand_text_view"
+    <TextView
+        android:layout_gravity="center"
+        android:id="@id/expandable_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        expandableTextView:maxCollapsedLines="2">
-
-        <TextView
-            android:id="@id/expandable_text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:textSize="12sp"
-            android:gravity="center"
-            android:textColor="@android:color/black" />
-
-        <ImageButton
-            android:id="@id/expand_collapse"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingTop="16dp"
-            android:paddingRight="16dp"
-            android:layout_gravity="center"
-            android:background="@android:color/transparent"/>
-
-    </com.ms.square.android.expandabletextview.ExpandableTextView>
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:textSize="12sp"
+        android:gravity="center"
+        android:textColor="@android:color/black" />
 
 </LinearLayout>

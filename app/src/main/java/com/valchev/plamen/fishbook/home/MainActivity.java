@@ -9,6 +9,7 @@ import android.os.PersistableBundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
@@ -70,6 +71,52 @@ public class MainActivity extends FishbookActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
+
+        mSearchView.setOnCloseListener(new SearchView.OnCloseListener() {
+
+            @Override
+            public boolean onClose() {
+
+                Fragment fragment = getSupportFragmentManager().findFragmentByTag("android:switcher:" + mViewPager.getId() + ":" + mViewPager.getCurrentItem());
+
+                if( fragment instanceof SearchView.OnCloseListener ) {
+
+                    ((SearchView.OnCloseListener) fragment).onClose();
+                }
+
+                mSearchViewHint.setVisibility(View.VISIBLE);
+
+                return false;
+            }
+        });
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+                Fragment fragment = getSupportFragmentManager().findFragmentByTag("android:switcher:" + mViewPager.getId() + ":" + mViewPager.getCurrentItem());
+
+                if( fragment instanceof SearchView.OnQueryTextListener ) {
+
+                    return ((SearchView.OnQueryTextListener) fragment).onQueryTextSubmit(query);
+                }
+
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+
+                Fragment fragment = getSupportFragmentManager().findFragmentByTag("android:switcher:" + mViewPager.getId() + ":" + mViewPager.getCurrentItem());
+
+                if( fragment instanceof SearchView.OnQueryTextListener ) {
+
+                    return ((SearchView.OnQueryTextListener) fragment).onQueryTextChange(newText);
+                }
+
+                return false;
+            }
+        });
     }
 
     @Override
@@ -148,5 +195,10 @@ public class MainActivity extends FishbookActivity {
 
             mTabLayout.getTabAt(index).setIcon(drawable);
         }
+    }
+
+    public void showFAB(boolean show) {
+
+        mAddNewPostFAB.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 }

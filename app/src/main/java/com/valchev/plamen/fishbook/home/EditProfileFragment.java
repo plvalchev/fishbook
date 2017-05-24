@@ -7,11 +7,13 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -22,6 +24,7 @@ import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.vision.text.Line;
 import com.google.firebase.database.DatabaseError;
 import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.nguyenhoanglam.imagepicker.activity.ImagePicker;
@@ -29,6 +32,7 @@ import com.nguyenhoanglam.imagepicker.activity.ImagePickerActivity;
 import com.nguyenhoanglam.imagepicker.model.Image;
 import com.valchev.plamen.fishbook.R;
 import com.valchev.plamen.fishbook.chat.ChatActivity;
+import com.valchev.plamen.fishbook.global.FishbookPost;
 import com.valchev.plamen.fishbook.global.FishbookUser;
 import com.valchev.plamen.fishbook.models.User;
 
@@ -49,19 +53,21 @@ public class EditProfileFragment extends Fragment {
     protected FishbookUser mFishbookUser;
     protected User mUserData;
     protected TextView mDisplayName;
-    protected ExpandableTextView mTopFishingRegions;
-    protected ExpandableTextView mMostChasedSpecies;
-    protected ExpandableTextView mFishingMethods;
+    protected TextView mTopFishingRegions;
+    protected TextView mMostChasedSpecies;
+    protected TextView mFishingMethods;
     protected SimpleDraweeView mProfilePicture;
     protected SimpleDraweeView mCoverPhoto;
-    protected FloatingActionButton mActionButton;
-    protected ProgressBar mProgressBar;
     protected PopupMenu mPopupMenu;
     protected ArrayList<com.valchev.plamen.fishbook.models.Image> mProfilePictures;
     protected ArrayList<com.valchev.plamen.fishbook.models.Image> mCoverPhotos;
     protected int mProfilePicturesCurrentPosition;
     protected int mCoverPhotosCurrentPosition;
     protected Button mSendMessageButton;
+    protected LinearLayout mLayoutUserInfo;
+    protected RecyclerView mRecyclerView;
+    protected FeedRecyclerViewAdapter mFeedRecyclerViewAdapter;
+    protected Button mSettingsButton;
 
     public EditProfileFragment() {
 
@@ -83,15 +89,23 @@ public class EditProfileFragment extends Fragment {
         TextView mostChasedSpeciesTitle = (TextView) species.findViewById(R.id.title);
         TextView fishingMethodsTitle = (TextView) methods.findViewById(R.id.title);
 
-        mTopFishingRegions = (ExpandableTextView) regions.findViewById(R.id.expand_text_view);
-        mMostChasedSpecies = (ExpandableTextView) species.findViewById(R.id.expand_text_view);
-        mFishingMethods = (ExpandableTextView) methods.findViewById(R.id.expand_text_view);
+        mTopFishingRegions = (TextView) regions.findViewById(R.id.expandable_text);
+        mMostChasedSpecies = (TextView) species.findViewById(R.id.expandable_text);
+        mFishingMethods = (TextView) methods.findViewById(R.id.expandable_text);
         mProfilePicture = (SimpleDraweeView) view.findViewById(R.id.profile_image);
         mCoverPhoto = (SimpleDraweeView) view.findViewById(R.id.cover_photo);
-        mActionButton = (FloatingActionButton) view.findViewById(R.id.edit_profile_button);
         mDisplayName = (TextView) view.findViewById(R.id.display_name);
-        mProgressBar = (ProgressBar) view.findViewById(R.id.edit_profile_progress);
         mSendMessageButton = (Button) view.findViewById(R.id.send_message);
+        mLayoutUserInfo = (LinearLayout) view.findViewById(R.id.layout_user_info);
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.list);
+        mSettingsButton = (Button) view.findViewById(R.id.settings);
+
+        FishbookActivity activity = (FishbookActivity)getActivity();
+
+        if( activity instanceof MainActivity ) {
+
+            ((MainActivity) activity).showFAB(false);
+        }
 
         topFishingRegionsTitle.setText(getResources().getString(R.string.regions));
         mostChasedSpeciesTitle.setText(getResources().getString(R.string.chased_species));
@@ -120,6 +134,9 @@ public class EditProfileFragment extends Fragment {
             mFishbookUser = FishbookUser.getCurrentUser();
         }
 
+        mFeedRecyclerViewAdapter = new FeedRecyclerViewAdapter(FishbookPost.getUserPostsDatabaseReference(mFishbookUser.getUid()), activity);
+        mRecyclerView.setAdapter(mFeedRecyclerViewAdapter);
+
         initUserProfile();
 
         mFishbookUser.addUserValueEventListener(new FishbookUser.UserValueEventListener() {
@@ -130,14 +147,11 @@ public class EditProfileFragment extends Fragment {
                 mUserData = user;
 
                 initUserProfile();
-
-                mProgressBar.setVisibility(View.GONE);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
-                mProgressBar.setVisibility(View.GONE);
             }
         });
 
@@ -159,10 +173,25 @@ public class EditProfileFragment extends Fragment {
             }
         });
 
+        mLayoutUserInfo.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+
+                editSettings();
+            }
+        });
+
+
         return view;
     }
 
     void initUserProfile() {
+
+        if( getActivity() instanceof UserProfileActivity ) {
+
+            ((UserProfileActivity) getActivity()).getSupportActionBar().setTitle(mUserData.getDisplayName());
+        }
 
         mDisplayName.setText(mUserData.getDisplayName());
         mTopFishingRegions.setText(mUserData.getTopFishingRegionsAsString());
@@ -234,7 +263,7 @@ public class EditProfileFragment extends Fragment {
 
     void initPopupMenu() {
 
-        mPopupMenu = new PopupMenu( EditProfileFragment.this.getContext(), mActionButton );
+        mPopupMenu = new PopupMenu( EditProfileFragment.this.getContext(), mSettingsButton );
         mPopupMenu.getMenuInflater().inflate(R.menu.menu_edit_profile, mPopupMenu.getMenu());
         mPopupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
 
@@ -270,21 +299,15 @@ public class EditProfileFragment extends Fragment {
             }
         });
 
-        mActionButton.setOnClickListener(new View.OnClickListener() {
+        mSettingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                if( mProgressBar.getVisibility() != View.GONE )
-                    return;
 
                 mPopupMenu.show();
             }
         });
 
-        boolean isCurrentUser = mFishbookUser.getUid().compareToIgnoreCase(FishbookUser.getCurrentUser().getUid()) == 0;
-
-        mActionButton.setVisibility( isCurrentUser ? View.VISIBLE : View.GONE );
-        mProgressBar.setVisibility( isCurrentUser ? mProgressBar.getVisibility() : View.GONE );
+//        boolean isCurrentUser = mFishbookUser.getUid().compareToIgnoreCase(FishbookUser.getCurrentUser().getUid()) == 0;
     }
 
     protected void editSettings() {
@@ -365,12 +388,9 @@ public class EditProfileFragment extends Fragment {
 
                 Log.d("setProfilePicture", "Unable to set profile picture");
 
-                mProgressBar.setVisibility(View.GONE);
-
                 e.printStackTrace();
             }
         });
-        mProgressBar.setVisibility(View.VISIBLE);
     }
 
     protected void setCoverPhoto(Image coverPhoto) {
@@ -387,11 +407,8 @@ public class EditProfileFragment extends Fragment {
 
                 Log.d("setCoverPhoto", "Unable to set cover photo");
 
-                mProgressBar.setVisibility(View.GONE);
-
                 e.printStackTrace();
             }
         });
-        mProgressBar.setVisibility(View.VISIBLE);
     }
 }
