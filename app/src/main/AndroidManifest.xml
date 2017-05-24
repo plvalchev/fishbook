@@ -53,8 +53,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".chat.ChatActivity"
-            android:parentActivityName=".home.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:parentActivityName=".home.MainActivity" />
     </application>
 
 </manifest>

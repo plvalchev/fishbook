@@ -4,58 +4,102 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.stfalcon.chatkit.commons.models.IDialog;
 import com.stfalcon.chatkit.commons.models.IMessage;
-import com.stfalcon.chatkit.commons.models.IUser;
 import com.valchev.plamen.fishbook.global.FishbookUser;
-import com.valchev.plamen.fishbook.models.Chat;
+import com.valchev.plamen.fishbook.global.FishbookValueEventListener;
+import com.valchev.plamen.fishbook.models.Message;
 import com.valchev.plamen.fishbook.models.User;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Created by admin on 21.5.2017 г..
  */
 
-public class ChatDialog implements IDialog, ValueEventListener, ValueChangeListener<ChatUser> {
+public class ChatDialog extends FishbookValueEventListener<String> implements IDialog {
 
-    private String id;
-    private Chat chat;
     private ArrayList<ChatUser> chatUsers;
     private ChatMessage lastMessage;
-    private ArrayList<ValueChangeListener<ChatDialog>> valueChangeListeners;
-    private DatabaseReference chatDatabaseReference;
-    private DatabaseReference messagesDatabaseReference;
+    private int unreadMessagesCount;
+    private ChatMessagesChildEventListener chatMessagesChildEventListener;
+    private UnreadChatMessages unreadMessagesValueEventListener;
 
-    public ChatDialog(String id) {
+    public ChatDialog(Query query) {
 
-        this.id = id;
-        this.chat = new Chat();
-        this.lastMessage = new ChatMessage();
-        this.lastMessage.addValueChangeListener(new ValueChangeListener<ChatMessage>() {
+        super(query);
+
+        this.unreadMessagesCount = 0;
+        this.chatUsers = new ArrayList<>();
+
+        String currentUserID = FishbookUser.getCurrentUser().getUid();
+
+        chatUsers.add(new ChatUser(currentUserID, new ValueChangeListener<User>() {
+
             @Override
-            public void onChange(ChatMessage newData) {
+            public void onChange(User newData) {
+
                 triggerChange();
-                setLastMessage(lastMessage);
+            }
+        }));
+
+        chatMessagesChildEventListener = new ChatMessagesChildEventListener(FirebaseDatabase.getInstance().getReference()
+                .child("messages").child(getKey()).orderByChild("invertedDateTime").limitToFirst(1), new ValueChangeListener<Collection<FishbookValueEventListener<Message>>>() {
+
+            @Override
+            public void onChange(Collection<FishbookValueEventListener<Message>> newData) {
+
+                if( newData != null ) {
+
+                    if( newData.iterator().hasNext() ) {
+
+                        ChatMessage message = (ChatMessage) newData.iterator().next();
+
+                        setLastMessage(message);
+
+                        triggerChange();
+                    }
+                }
             }
         });
 
-        chatDatabaseReference = FirebaseDatabase.getInstance().getReference().child("chats").child(id);
-        chatDatabaseReference.addValueEventListener(this);
+        DatabaseReference unreadMessagesDatabaseReference = FirebaseDatabase.getInstance().getReference()
+                .child("unread-messages").child(getKey()).child(currentUserID);
 
-        messagesDatabaseReference = FirebaseDatabase.getInstance().getReference().child("messages").child(id);
-        messagesDatabaseReference.orderByChild("invertedDateTime").limitToFirst(1).addValueEventListener(lastMessage);
+        unreadMessagesValueEventListener = new UnreadChatMessages(
+                unreadMessagesDatabaseReference,
+                new ValueChangeListener<Long>() {
+
+            @Override
+            public void onChange(Long newData) {
+
+                if( newData == null )
+                    unreadMessagesCount = 0;
+                else
+                    unreadMessagesCount = (int) newData.longValue();
+
+                triggerChange();
+            }
+        });
     }
 
     @Override
     public String getId() {
-        return id;
+
+        return getKey();
     }
 
     @Override
     public String getDialogPhoto() {
+
+        if( chatUsers == null ) {
+
+            return null;
+        }
 
         String dialogPhoto = new String();
         FishbookUser fishbookUser = FishbookUser.getCurrentUser();
@@ -63,12 +107,15 @@ public class ChatDialog implements IDialog, ValueEventListener, ValueChangeListe
 
         for (ChatUser chatUser : chatUsers) {
 
-            // TODO Uncomment
-//            if( currentUserId != null && chatUser.getId().compareToIgnoreCase(currentUserId) == 0 )
-//                continue;
+            if( chatUser.getValue() == null )
+                continue;
 
             dialogPhoto = chatUser.getAvatar();
-            break;
+
+            if( chatUsers.size() > 1 && currentUserId != null && chatUser.getId().compareToIgnoreCase(currentUserId) == 0 )
+                continue;
+            else
+                break;
         }
 
         return dialogPhoto;
@@ -77,27 +124,38 @@ public class ChatDialog implements IDialog, ValueEventListener, ValueChangeListe
     @Override
     public String getDialogName() {
 
+        if( chatUsers == null ) {
+
+            return null;
+        }
+
         String dialogName = new String();
+        String userName = new String();
         FishbookUser fishbookUser = FishbookUser.getCurrentUser();
         String currentUserId = fishbookUser != null ? fishbookUser.getUid() : null;
 
         for (ChatUser chatUser : chatUsers) {
 
-            // TODO Uncomment
-//            if( currentUserId != null && chatUser.getId().compareToIgnoreCase(currentUserId) == 0 )
-//                continue;
+            if( chatUser.getValue() == null )
+                continue;
+
+            userName = chatUser.getName();
+
+            if( chatUsers.size() > 1 && currentUserId != null && chatUser.getId().compareToIgnoreCase(currentUserId) == 0 )
+                continue;
 
             if( !dialogName.isEmpty() )
                 dialogName += ", ";
 
-            dialogName += chatUser.getName();
+            dialogName += userName;
         }
 
-        return dialogName;
+        return dialogName.isEmpty() ? userName : dialogName;
     }
 
     @Override
-    public List<? extends IUser> getUsers() {
+    public ArrayList<ChatUser> getUsers() {
+
         return chatUsers;
     }
 
@@ -116,47 +174,12 @@ public class ChatDialog implements IDialog, ValueEventListener, ValueChangeListe
     @Override
     public int getUnreadCount() {
 
-        int unreadCount = 0;
-
-        FishbookUser fishbookUser = FishbookUser.getCurrentUser();
-
-        if( fishbookUser != null && chat.userUnreadMessages.containsKey(fishbookUser.getUid()) ) {
-
-            Integer integer = chat.userUnreadMessages.get(fishbookUser.getUid());
-
-            if( integer != null ) {
-
-                unreadCount = integer.intValue();
-            }
-        }
-
-        return unreadCount;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ChatDialog that = (ChatDialog) o;
-
-        if (chat != null ? !chat.equals(that.chat) : that.chat != null) return false;
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = chat != null ? chat.hashCode() : 0;
-        result = 31 * result;
-        return result;
+        return unreadMessagesCount;
     }
 
     public void cleanUp() {
 
-        chatDatabaseReference.removeEventListener(this);
-
-        valueChangeListeners.clear();
+        super.cleanUp();
 
         if( chatUsers != null ) {
 
@@ -165,69 +188,41 @@ public class ChatDialog implements IDialog, ValueEventListener, ValueChangeListe
                 chatUser.cleanUp();
             }
         }
-    }
 
-    private void loadChatUsers() {
+        if( unreadMessagesValueEventListener != null ) {
 
-        cleanUp();
-
-        chatUsers = new ArrayList<>();
-
-        for(String userID : chat.users.keySet()) {
-
-            User user = new User();
-            ChatUser chatUser = new ChatUser(userID);
-
-            chatUser.addValueChangeListener(this);
-
-            chatUsers.add(chatUser);
+            unreadMessagesValueEventListener.cleanUp();
         }
-
-        triggerChange();
     }
 
     @Override
-    public void onChange(ChatUser newData) {
+    protected void triggerChange() {
 
-        triggerChange();
-    }
+        super.triggerChange();
 
-    public void addValueChangeListener(ValueChangeListener<ChatDialog> valueChangeListener) {
-
-        if( valueChangeListeners == null ) {
-
-            valueChangeListeners = new ArrayList<>();
+        if( getValue() == null ) {
+            return;
         }
 
-        if( !valueChangeListeners.contains(valueChangeListener) ) {
+        if( chatUsers != null ) {
 
-            valueChangeListeners.add(valueChangeListener);
+            int index = 0;
+            int size = chatUsers.size();
 
-            valueChangeListener.onChange(this);
-        }
-    }
+            for (index = 0; index < size; index++) {
 
-    private void triggerChange() {
+                ChatUser user = chatUsers.get(index);
 
-        if( valueChangeListeners != null ) {
+                if (getValue().equals(user.getId())) {
 
-            for (ValueChangeListener<ChatDialog> valueChangeListener : valueChangeListeners ) {
+                    break;
+                }
+            }
 
-                valueChangeListener.onChange(this);
+            if( index >= size ) {
+
+                chatUsers.add(new ChatUser(getValue()));
             }
         }
-    }
-
-    @Override
-    public void onDataChange(DataSnapshot dataSnapshot) {
-
-        chat = dataSnapshot.getValue(Chat.class);
-
-        triggerChange();
-    }
-
-    @Override
-    public void onCancelled(DatabaseError databaseError) {
-
     }
 }

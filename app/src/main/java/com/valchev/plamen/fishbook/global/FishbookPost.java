@@ -204,7 +204,7 @@ public class FishbookPost implements OnSuccessListener<ArrayList<Image>>, ValueE
 
         if( mPostValueEventListeners == null ) {
 
-            mPostValueEventListeners = new ArrayList<PostValueEventListener>();
+            mPostValueEventListeners = new ArrayList<>();
         }
         else if( mPostValueEventListeners.contains(valueEventListener) ) {
 

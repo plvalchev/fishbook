@@ -1,5 +1,7 @@
 package com.valchev.plamen.fishbook.chat;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -21,20 +23,21 @@ import com.stfalcon.chatkit.dialogs.DialogsList;
 import com.stfalcon.chatkit.dialogs.DialogsListAdapter;
 import com.valchev.plamen.fishbook.R;
 import com.valchev.plamen.fishbook.global.FishbookUser;
+import com.valchev.plamen.fishbook.global.FishbookValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Created by admin on 21.5.2017 г..
  */
 
-public class ChatFragment extends Fragment implements ChildEventListener, ValueChangeListener<ChatDialog> {
+public class ChatFragment extends Fragment implements ValueChangeListener<Collection<FishbookValueEventListener<String>>> {
 
     private ArrayList<ChatDialog> adapterChats;
-    private ArrayList<ChatDialog> loadedChats;
     private DialogsList dialogsList;
     private DialogsListAdapter<ChatDialog> dialogsListAdapter;
-    private DatabaseReference databaseReference;
+    private ChatDialogChildEventListener chatDialogChildEventListener;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -42,7 +45,7 @@ public class ChatFragment extends Fragment implements ChildEventListener, ValueC
 
         View view = inflater.inflate(R.layout.fragment_chat, container, false);
 
-        loadedChats = new ArrayList<>();
+        adapterChats = new ArrayList<>();
         dialogsList = (DialogsList) view.findViewById(R.id.dialogsList);
 
         dialogsListAdapter = new DialogsListAdapter<>(R.layout.chat_item_dialog, new ImageLoader() {
@@ -61,78 +64,68 @@ public class ChatFragment extends Fragment implements ChildEventListener, ValueC
             }
         });
 
+        dialogsListAdapter.setOnDialogClickListener(new DialogsListAdapter.OnDialogClickListener<ChatDialog>() {
+
+            @Override
+            public void onDialogClick(ChatDialog dialog) {
+
+                ArrayList<ChatUser> users = dialog.getUsers();
+
+                if( users != null ) {
+
+                    String receiverID = FishbookUser.getCurrentUser().getUid();
+
+                    for (ChatUser user: users) {
+
+                        if( !user.getId().equals(receiverID) ) {
+
+                            receiverID = user.getId();
+                            break;
+                        }
+                    }
+
+                    Activity activity = getActivity();
+                    Intent intent = new Intent(activity, ChatActivity.class);
+
+                    Bundle bundle = new Bundle();
+                    bundle.putString("receiver", receiverID);
+
+                    intent.putExtras(bundle);
+
+                    activity.startActivity(intent);
+                }
+            }
+        });
+
         dialogsList.setAdapter(dialogsListAdapter);
 
-        databaseReference = FirebaseDatabase.getInstance().getReference().child("user-chats").child(FishbookUser.getCurrentUser().getUid());
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("user-chats").child(FishbookUser.getCurrentUser().getUid());
 
-        databaseReference.addChildEventListener(this);
+        chatDialogChildEventListener = new ChatDialogChildEventListener(databaseReference, this);
 
         return view;
     }
 
     @Override
-    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+    public void onChange(Collection<FishbookValueEventListener<String>> newData) {
 
-        ChatDialog chatDialog = new ChatDialog(dataSnapshot.getKey());
+        if( newData == null || newData.size() == 0 ) {
 
-        loadedChats.add(chatDialog);
-    }
-
-    @Override
-    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-//        ChatDialog chatDialog = new ChatDialog(dataSnapshot.getKey());
-//
-//        int size = loadedChats.size();
-//
-//        for (int index = 0; index < size; index++ ) {
-//
-//            ChatDialog oldChatDialog = loadedChats.get(index);
-//
-//            if( oldChatDialog.getId().equals(chatDialog.getId()) ) {
-//
-//                oldChatDialog.cleanUp();
-//                loadedChats.set(index, chatDialog);
-//                break;
-//            }
-//        }
-    }
-
-    @Override
-    public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-        int size = loadedChats.size();
-
-        for (int index = 0; index < size; index++ ) {
-
-            ChatDialog oldChatDialog = loadedChats.get(index);
-
-            if( oldChatDialog.getId().equals(dataSnapshot.getKey()) ) {
-
-                oldChatDialog.cleanUp();
-                loadedChats.remove(index);
-                adapterChats.remove(oldChatDialog);
-                dialogsListAdapter.deleteById(dataSnapshot.getKey());
-                break;
-            }
+            dialogsListAdapter.clear();
+            return;
         }
-    }
 
-    @Override
-    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+        for (FishbookValueEventListener<String> fishbookValueEventListener : newData) {
 
-    }
+            ChatDialog chatDialog = (ChatDialog) fishbookValueEventListener;
 
-    @Override
-    public void onCancelled(DatabaseError databaseError) {
+            // Ще ги бновяаваме само, след като заредим последното съобщение и потребителя
+            if( chatDialog.getUsers() == null ||
+                    chatDialog.getLastMessage() == null ||
+                    chatDialog.getLastMessage().getUser() == null ) {
 
-    }
-
-    @Override
-    public void onChange(ChatDialog newData) {
-
-        // Ще ги обновяаваме само, след като заредим последното съобщение
-        if( newData.getLastMessage() != null ) {
+                continue;
+            }
 
             int index = 0;
             int size = adapterChats.size();
@@ -141,17 +134,17 @@ public class ChatFragment extends Fragment implements ChildEventListener, ValueC
 
                 ChatDialog oldChatDialog = adapterChats.get(index);
 
-                if( oldChatDialog.getId().equals(newData.getId()) ) {
+                if( oldChatDialog.getId().equals(chatDialog.getId()) ) {
 
-                    adapterChats.set(index, newData);
-                    dialogsListAdapter.updateItemById(newData);
+                    adapterChats.set(index, chatDialog);
+                    dialogsListAdapter.updateItemById(chatDialog);
                     break;
                 }
             }
 
             if( index >= size ) {
-                adapterChats.add(newData);
-                dialogsListAdapter.addItem(newData);
+                adapterChats.add(chatDialog);
+                dialogsListAdapter.addItem(chatDialog);
             }
         }
     }

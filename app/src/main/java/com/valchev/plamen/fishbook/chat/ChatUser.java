@@ -6,7 +6,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.stfalcon.chatkit.commons.models.IUser;
 import com.valchev.plamen.fishbook.global.FishbookUser;
-import com.valchev.plamen.fishbook.models.Chat;
+import com.valchev.plamen.fishbook.global.FishbookValueEventListener;
 import com.valchev.plamen.fishbook.models.Image;
 import com.valchev.plamen.fishbook.models.User;
 
@@ -16,31 +16,35 @@ import java.util.ArrayList;
  * Created by admin on 21.5.2017 г..
  */
 
-public class ChatUser implements IUser, ValueEventListener {
+public class ChatUser extends FishbookValueEventListener<User> implements IUser {
 
-    private DatabaseReference mUserDatabaseReference;
-    private String id;
-    private User user;
-    private ArrayList<ValueChangeListener<ChatUser>> valueChangeListeners;
+    public ChatUser(String key) {
 
-    public ChatUser(String id) {
+        super( FishbookUser.getUserDatabaseReference(key) );
+    }
 
-        this.id = id;
-        this.user = new User();
+    public ChatUser(String key, ValueChangeListener<User> valueChangeListener) {
 
-        mUserDatabaseReference = FishbookUser.getUserDatabaseReference(id);
-        mUserDatabaseReference.addValueEventListener(this);
+        super( FishbookUser.getUserDatabaseReference(key), valueChangeListener );
     }
 
     @Override
     public String getId() {
-        return id;
+
+        return getKey();
     }
 
     @Override
     public String getName() {
 
-        return user.getDisplayName();
+        String name = null;
+
+        if( getValue() != null ) {
+
+            name = getValue().getDisplayName();
+        }
+
+        return name;
     }
 
     @Override
@@ -48,58 +52,13 @@ public class ChatUser implements IUser, ValueEventListener {
 
         String avatar = null;
 
-        if( user.profilePictures != null ) {
+        if( getValue() != null && getValue().profilePictures != null ) {
 
-            Image image = user.profilePictures.get(0);
+            Image image = getValue().profilePictures.get(0);
 
             avatar = image.midResUri;
         }
 
         return avatar;
-    }
-
-    @Override
-    public void onDataChange(DataSnapshot dataSnapshot) {
-
-        user = dataSnapshot.getValue(User.class);
-
-        triggerChange();
-    }
-
-    @Override
-    public void onCancelled(DatabaseError databaseError) {
-
-    }
-
-    public void cleanUp() {
-
-        mUserDatabaseReference.removeEventListener(this);
-        valueChangeListeners.clear();
-    }
-
-    public void addValueChangeListener(ValueChangeListener<ChatUser> valueChangeListener) {
-
-        if( valueChangeListeners == null ) {
-
-            valueChangeListeners = new ArrayList<>();
-        }
-
-        if( !valueChangeListeners.contains(valueChangeListener) ) {
-
-            valueChangeListeners.add(valueChangeListener);
-
-            valueChangeListener.onChange(this);
-        }
-    }
-
-    private void triggerChange() {
-
-        if( valueChangeListeners != null ) {
-
-            for (ValueChangeListener<ChatUser> valueChangeListener : valueChangeListeners ) {
-
-                valueChangeListener.onChange(this);
-            }
-        }
     }
 }

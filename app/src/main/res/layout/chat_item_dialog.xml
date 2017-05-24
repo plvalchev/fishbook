@@ -9,7 +9,9 @@
         android:id="@id/dialogContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground">
+        android:background="@android:color/white">
+
+        <!--android:background="?android:attr/selectableItemBackground">-->
 
         <com.facebook.drawee.view.SimpleDraweeView
             android:id="@id/dialogAvatar"
@@ -65,8 +67,8 @@
                 android:layout_height="24dp"
                 android:layout_marginEnd="7dp"
                 android:layout_marginRight="7dp"
-                app:roundAsCircle="true"
-                app:roundingBorderWidth="3dp"
+                android:scaleType="center"
+                app:roundingBorderWidth="1dp"
                 app:roundingBorderColor="@android:color/white"
                 app:backgroundImage="@android:color/white"
                 app:placeholderImage="@mipmap/ic_person_black_48dp"/>

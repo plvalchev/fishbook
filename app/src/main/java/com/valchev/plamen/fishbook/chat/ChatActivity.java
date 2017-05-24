@@ -31,12 +31,13 @@ import com.stfalcon.chatkit.messages.MessagesList;
 import com.stfalcon.chatkit.messages.MessagesListAdapter;
 import com.valchev.plamen.fishbook.R;
 import com.valchev.plamen.fishbook.global.FishbookUser;
+import com.valchev.plamen.fishbook.global.FishbookValueEventListener;
 import com.valchev.plamen.fishbook.home.FishbookActivity;
-import com.valchev.plamen.fishbook.models.Chat;
 import com.valchev.plamen.fishbook.models.Message;
 import com.valchev.plamen.fishbook.models.User;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -47,28 +48,26 @@ import java.util.Map;
  */
 
 public class ChatActivity extends FishbookActivity
-        implements ValueEventListener, ChildEventListener, ValueChangeListener<ChatMessage>, MessageInput.InputListener {
+        implements ValueChangeListener<Collection<FishbookValueEventListener<Message>>>, MessageInput.InputListener {
 
+    private HashMap<String, Object> messagesInAdapter;
     private MessagesListAdapter<ChatMessage> messagesListAdapter;
     private MessagesList messagesList;
     private MessageInput messageInput;
     private ChatUser sender;
     private ChatUser receiver;
-    private DatabaseReference messagesDatabaseReference;
-    private DatabaseReference chatDatabaseReference;
     private FishbookUser currentUser;
-    private ArrayList<ChatMessage> chatMessages;
-    private Chat chat;
+    private ChatMessagesChildEventListener chatMessagesChildEventListener;
+    private UnreadChatMessages unreadChatMessages;
 
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.chat_activity);
 
-        chatMessages = new ArrayList<>();
-
         messagesList = (MessagesList) findViewById(R.id.messagesList);
         messageInput = (MessageInput) findViewById(R.id.input);
+        messagesInAdapter = new HashMap<>();
 
         messageInput.setInputListener(this);
 
@@ -124,13 +123,30 @@ public class ChatActivity extends FishbookActivity
         String receiverUid = bundle.getString("receiver");
         receiver = new ChatUser(receiverUid);
 
+        receiver.addValueChangeListener(new ValueChangeListener<User>() {
+
+            @Override
+            public void onChange(User newData) {
+
+                getSupportActionBar().setTitle(receiver.getName());
+            }
+        });
+
         String chatKey = getChatKey();
 
-        messagesDatabaseReference = FirebaseDatabase.getInstance().getReference().child("messages").child(chatKey);
-        chatDatabaseReference = FirebaseDatabase.getInstance().getReference().child("chats").child(chatKey);
+        chatMessagesChildEventListener = new ChatMessagesChildEventListener(FirebaseDatabase.getInstance().getReference().child("messages").child(chatKey), this);
 
-        messagesDatabaseReference.addChildEventListener(this);
-        chatDatabaseReference.addValueEventListener(this);
+        DatabaseReference unreadMessagesDatabaseReference = FirebaseDatabase.getInstance().getReference()
+                .child("unread-messages").child(chatKey).child(sender.getId());
+
+        unreadChatMessages = new UnreadChatMessages(unreadMessagesDatabaseReference, new ValueChangeListener<Long>() {
+
+            @Override
+            public void onChange(Long newData) {
+
+                unreadChatMessages.setValue(null);
+            }
+        });
     }
 
     public String getChatKey() {
@@ -161,62 +177,36 @@ public class ChatActivity extends FishbookActivity
     }
 
     @Override
-    public void onDataChange(DataSnapshot dataSnapshot) {
+    public void onChange(Collection<FishbookValueEventListener<Message>> newData) {
 
-    }
 
-    @Override
-    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+        if( newData == null || newData.size() == 0 ) {
 
-        Message message = dataSnapshot.getValue(Message.class);
-        ChatUser chatUser = message.userID.equals(receiver.getId()) ? receiver : sender;
+            messagesListAdapter.clear();
+            return;
+        }
 
-        ChatMessage chatMessage = new ChatMessage( getChatKey(), dataSnapshot.getKey(), chatUser, message );
+        for (FishbookValueEventListener<Message> fishbookValueEventListener : newData) {
 
-        chatMessages.add(chatMessage);
-        messagesListAdapter.addToStart(chatMessage, true);
-    }
+            ChatMessage chatMessage = (ChatMessage) fishbookValueEventListener;
 
-    @Override
-    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+            if( chatMessage == null ||
+                    chatMessage.getUser() == null ||
+                    chatMessage.getValue() == null ) {
 
-    }
+                continue;
+            }
 
-    @Override
-    public void onChildRemoved(DataSnapshot dataSnapshot) {
+            if( messagesInAdapter.containsKey(chatMessage.getId()) ) {
 
-        int size = chatMessages.size();
+                messagesListAdapter.update(chatMessage);
+            }
+            else {
 
-        for( int index = 0; index < size; index++ ) {
-
-            ChatMessage chatMessage = chatMessages.get(index);
-
-            if( chatMessage.getId().equals(dataSnapshot.getKey()) ) {
-
-                chatMessage.cleanUp();
-
-                chatMessages.remove(index);
-                messagesListAdapter.deleteById(dataSnapshot.getKey());
-
-                break;
+                messagesInAdapter.put(chatMessage.getId(), null);
+                messagesListAdapter.addToStart(chatMessage, true);
             }
         }
-    }
-
-    @Override
-    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-    }
-
-    @Override
-    public void onCancelled(DatabaseError databaseError) {
-
-    }
-
-    @Override
-    public void onChange(ChatMessage newData) {
-
-        messagesListAdapter.update(newData);
     }
 
     @Override
@@ -228,41 +218,43 @@ public class ChatActivity extends FishbookActivity
         message.userID = sender.getId();
 
         Map<String, Object> messageMap = message.toMap();
-
-        if( chat == null ) {
-
-            chat = new Chat();
-
-            chat.users = new HashMap<>();
-            chat.userUnreadMessages = new HashMap<>();
-            chat.users.put(receiver.getId(), true);
-            chat.users.put(sender.getId(), true);
-            chat.userUnreadMessages.put(receiver.getId(), 1);
-        }
-        else {
-
-            Integer unreadMessages = chat.userUnreadMessages.get(receiver.getId());
-
-            if( unreadMessages == null ) {
-
-                unreadMessages = new Integer(0);
-            }
-
-            chat.userUnreadMessages.put(receiver.getId(), unreadMessages + 1);
-        }
-
-        Map<String, Object> chatMap = chat.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
-
         String chatKey = getChatKey();
+        String messageKey = FirebaseDatabase.getInstance().getReference().child("messages").child(chatKey).push().getKey();
 
-        childUpdates.put("/messages/" + chatKey + "/" + messagesDatabaseReference.push().getKey(), messageMap);
-        childUpdates.put("/chats/" + chatKey, chatMap);
-        childUpdates.put("/user-chats/" + receiver.getId() + "/" + chatKey, chatMap);
-        childUpdates.put("/user-chats/" + sender.getId() + "/" + chatKey, chatMap);
+        childUpdates.put("/messages/" + chatKey + "/" + messageKey, messageMap);
+        childUpdates.put("/user-chats/" + sender.getId() + "/" + chatKey, receiver.getId());
+        childUpdates.put("/user-chats/" + receiver.getId() + "/" + chatKey, sender.getId());
 
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         databaseReference.updateChildren(childUpdates);
+
+        DatabaseReference receiverUnreadMessages = FirebaseDatabase.getInstance().getReference().child("unread-messages").child(chatKey).child(receiver.getId());
+
+        receiverUnreadMessages.runTransaction(new Transaction.Handler() {
+
+            @Override
+            public Transaction.Result doTransaction(MutableData mutableData) {
+
+                Integer unreadMessages = mutableData.getValue(Integer.class);
+
+                if (unreadMessages == null) {
+
+                    unreadMessages = new Integer(0);
+                }
+
+                unreadMessages++;
+
+                mutableData.setValue(unreadMessages);
+
+                return Transaction.success(mutableData);
+            }
+
+            @Override
+            public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+
+            }
+        });
 
         return true;
     }
