@@ -1,14 +1,11 @@
 package com.valchev.plamen.fishbook.chat;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.stfalcon.chatkit.commons.models.IDialog;
 import com.stfalcon.chatkit.commons.models.IMessage;
+import com.valchev.plamen.fishbook.global.ValueChangeListener;
+import com.valchev.plamen.fishbook.utils.FirebaseDatabaseUtils;
 import com.valchev.plamen.fishbook.global.FishbookUser;
 import com.valchev.plamen.fishbook.global.FishbookValueEventListener;
 import com.valchev.plamen.fishbook.models.Message;
@@ -47,8 +44,10 @@ public class ChatDialog extends FishbookValueEventListener<String> implements ID
             }
         }));
 
-        chatMessagesChildEventListener = new ChatMessagesChildEventListener(FirebaseDatabase.getInstance().getReference()
-                .child("messages").child(getKey()).orderByChild("invertedDateTime").limitToFirst(1), new ValueChangeListener<Collection<FishbookValueEventListener<Message>>>() {
+        Query lastMessageQuery = FirebaseDatabaseUtils.getChatMessagesDatabaseReference(getKey())
+                .orderByChild("invertedDateTime").limitToFirst(1);
+
+        chatMessagesChildEventListener = new ChatMessagesChildEventListener(lastMessageQuery, new ValueChangeListener<Collection<FishbookValueEventListener<Message>>>() {
 
             @Override
             public void onChange(Collection<FishbookValueEventListener<Message>> newData) {
@@ -67,8 +66,7 @@ public class ChatDialog extends FishbookValueEventListener<String> implements ID
             }
         });
 
-        DatabaseReference unreadMessagesDatabaseReference = FirebaseDatabase.getInstance().getReference()
-                .child("unread-messages").child(getKey()).child(currentUserID);
+        DatabaseReference unreadMessagesDatabaseReference = FirebaseDatabaseUtils.getCurrentUserUnreadMessagesDatabaseReference(getKey());
 
         unreadMessagesValueEventListener = new UnreadChatMessages(
                 unreadMessagesDatabaseReference,

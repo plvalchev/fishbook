@@ -35,34 +35,4 @@ public class Message implements Serializable {
 
         return result;
     }
-
-    public Message(String content, String userID, Long invertedDateTime) {
-        this.content = content;
-        this.userID = userID;
-        this.invertedDateTime = invertedDateTime;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public String getUserID() {
-        return userID;
-    }
-
-    public void setUserID(String userID) {
-        this.userID = userID;
-    }
-
-    public Long getInvertedDateTime() {
-        return invertedDateTime;
-    }
-
-    public void setInvertedDateTime(Long invertedDateTime) {
-        this.invertedDateTime = invertedDateTime;
-    }
 }

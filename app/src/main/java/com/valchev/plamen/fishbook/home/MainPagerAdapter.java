@@ -28,6 +28,10 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
                 fragment = new ChatFragment();
                 break;
 
+            case 2:
+                fragment = new EventFragment();
+                break;
+
             default:
                 fragment = new EditProfileFragment();
                 break;
@@ -39,6 +43,6 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
     @Override
     public int getCount() {
 
-        return 3;
+        return 4;
     }
 }

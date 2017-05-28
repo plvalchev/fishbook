@@ -16,8 +16,12 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.valchev.plamen.fishbook.models.Image;
 import com.valchev.plamen.fishbook.models.User;
+import com.valchev.plamen.fishbook.utils.FirebaseDatabaseUtils;
+import com.valchev.plamen.fishbook.utils.FirebaseStorageUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -38,8 +42,6 @@ public class FishbookUser implements ValueEventListener, OnSuccessListener<Array
     }
 
     protected String mUid;
-    protected DatabaseReference mDatabaseReference;
-    protected StorageReference mStorageReference;
     protected User mUserData;
     protected ArrayList<UserValueEventListener> mUserValueEventListeners;
 
@@ -49,16 +51,12 @@ public class FishbookUser implements ValueEventListener, OnSuccessListener<Array
     public FishbookUser(String uid) {
 
         mUid = uid;
-        mDatabaseReference = FirebaseDatabase.getInstance().getReference();
-        mStorageReference = FirebaseStorage.getInstance().getReference();
     }
 
     public FishbookUser(String uid, User userData) {
 
         mUserData = userData;
         mUid = uid;
-        mDatabaseReference = FirebaseDatabase.getInstance().getReference();
-        mStorageReference = FirebaseStorage.getInstance().getReference();
     }
 
     public static void loadCurrentUserInBackground(final UserAuthStateListener userAuthStateListener) {
@@ -107,39 +105,33 @@ public class FishbookUser implements ValueEventListener, OnSuccessListener<Array
 
         Log.d( "saveUserData", "Save user data begin" );
 
-        DatabaseReference userDatabaseReference = getUserDatabaseReference();
+        if( mUserData.profilePicture != null ) {
 
-        if( mUserData.profilePictures != null ) {
-
-            int size = mUserData.profilePictures.size();
-
-            for( int index = 0; index < size; index++ ) {
-
-                Image image = mUserData.profilePictures.get(index);
-
-                if (image.id == null || image.id.isEmpty()) {
-
-                    image.id = userDatabaseReference.child("profilePictures").push().getKey();
-                }
-            }
+            if( mUserData.profilePicture.id == null || mUserData.profilePicture.id.isEmpty() )
+                mUserData.profilePicture.id = FirebaseDatabaseUtils.getProfileImagesDatabaseReference().push().getKey();
         }
 
-        if( mUserData.coverPhotos != null ) {
+        if( mUserData.coverPhoto != null ) {
 
-            int size = mUserData.coverPhotos.size();
-
-            for( int index = 0; index < size; index++ ) {
-
-                Image image = mUserData.coverPhotos.get(index);
-
-                if (image.id == null || image.id.isEmpty()) {
-
-                    image.id = userDatabaseReference.child("coverPhotos").push().getKey();
-                }
-            }
+            if( mUserData.coverPhoto.id == null || mUserData.coverPhoto.id.isEmpty() )
+                mUserData.coverPhoto.id = FirebaseDatabaseUtils.getCoverImagesDatabaseReference().push().getKey();
         }
 
-        userDatabaseReference.setValue(mUserData);
+        Map<String, Object> childUpdates = new HashMap<>();
+
+        childUpdates.put("/user/" + getUid(), mUserData);
+
+        if( mUserData.profilePicture != null ) {
+
+            childUpdates.put("/images/profile-pictures/" + getUid() + "/" + mUserData.profilePicture.id, mUserData.profilePicture);
+        }
+
+        if( mUserData.coverPhoto != null ) {
+
+            childUpdates.put("/images/cover-photos/" + getUid() + "/" + mUserData.coverPhoto.id, mUserData.coverPhoto);
+        }
+
+        FirebaseDatabaseUtils.getDatabaseReference().updateChildren(childUpdates);
 
         Log.d( "saveUserData", "Save user data end" );
     }
@@ -154,21 +146,12 @@ public class FishbookUser implements ValueEventListener, OnSuccessListener<Array
 
     public void setCoverPhoto(Image newImage, OnFailureListener onFailureListener) {
 
-        if (mUserData.coverPhotos == null) {
-
-            mUserData.coverPhotos = new ArrayList<>();
-        }
-
-        mUserData.coverPhotos.remove(newImage);
-        mUserData.coverPhotos.add(0, newImage);
+        mUserData.coverPhoto = newImage;
 
         if( !newImage.isUploaded() ) {
 
-            String coverPhotoName = "cover_photo_" + UUID.randomUUID().toString();
-            StorageReference lowResCoverPhotosStorageReference = getLowResCoverPhotosStorageReference(coverPhotoName);
-            StorageReference midResCoverPhotosStorageReference = getMidResCoverPhotosStorageReference(coverPhotoName);
-            StorageReference highResCoverPhotosStorageReference = getHighResCoverPhotosStorageReference(coverPhotoName);
-            MultipleImageUploader.MultipleImage multipleImage = new MultipleImageUploader.MultipleImage(newImage, lowResCoverPhotosStorageReference, midResCoverPhotosStorageReference, highResCoverPhotosStorageReference);
+            StorageReference storageReference = FirebaseStorageUtils.getUserCoverImagesStorageReference(getUid());
+            MultipleImageUploader.MultipleImage multipleImage = new MultipleImageUploader.MultipleImage(newImage, storageReference);
             MultipleImageUploader multipleImageUploader = new MultipleImageUploader(this, onFailureListener);
 
             multipleImageUploader.execute(multipleImage);
@@ -181,21 +164,12 @@ public class FishbookUser implements ValueEventListener, OnSuccessListener<Array
 
     public void setProfilePicture(Image newImage, OnFailureListener onFailureListener) {
 
-        if( mUserData.profilePictures == null ) {
-
-            mUserData.profilePictures = new ArrayList<>();
-        }
-
-        mUserData.profilePictures.remove(newImage);
-        mUserData.profilePictures.add(0, newImage);
+        mUserData.profilePicture = newImage;
 
         if( !newImage.isUploaded() ) {
 
-            String profilePictureName = "profile_picture" + UUID.randomUUID().toString();
-            StorageReference lowResProfilePictureStorageReference = getLowResProfilePicturesStorageReference(profilePictureName);
-            StorageReference midResProfilePictureStorageReference = getMidResProfilePicturesStorageReference(profilePictureName);
-            StorageReference highResProfilePictureStorageReference = getHighResProfilePicturesStorageReference(profilePictureName);
-            MultipleImageUploader.MultipleImage multipleImage = new MultipleImageUploader.MultipleImage(newImage, lowResProfilePictureStorageReference, midResProfilePictureStorageReference, highResProfilePictureStorageReference);
+            StorageReference storageReference = FirebaseStorageUtils.getUserProfileImagesStorageReference(getUid());
+            MultipleImageUploader.MultipleImage multipleImage = new MultipleImageUploader.MultipleImage(newImage, storageReference);
             MultipleImageUploader multipleImageUploader = new MultipleImageUploader(this, onFailureListener);
 
             multipleImageUploader.execute(multipleImage);
@@ -237,7 +211,7 @@ public class FishbookUser implements ValueEventListener, OnSuccessListener<Array
 
     public void reloadUserInBackground() {
 
-        DatabaseReference userDatabaseReference = getUserDatabaseReference();
+        DatabaseReference userDatabaseReference = FirebaseDatabaseUtils.getUserDatabaseReference(getUid());
         userDatabaseReference.removeEventListener(this);
         userDatabaseReference.addValueEventListener(this);
     }
@@ -251,7 +225,7 @@ public class FishbookUser implements ValueEventListener, OnSuccessListener<Array
 
         if( mUserValueEventListeners == null ) {
 
-            mUserValueEventListeners = new ArrayList<UserValueEventListener>();
+            mUserValueEventListeners = new ArrayList<>();
         }
         else if( mUserValueEventListeners.contains(valueEventListener) ) {
 
@@ -262,77 +236,5 @@ public class FishbookUser implements ValueEventListener, OnSuccessListener<Array
 
         if( mUserData != null )
             valueEventListener.onDataChange(mUserData);
-    }
-
-    protected DatabaseReference getCoverPhotosDatabaseReference() {
-
-        DatabaseReference userDatabaseReference = getUserDatabaseReference();
-        DatabaseReference databaseReference = userDatabaseReference.child("cover_photos");
-
-        return databaseReference;
-    }
-
-    protected DatabaseReference getProfilePicturesDatabaseReference() {
-
-        DatabaseReference userDatabaseReference = getUserDatabaseReference();
-        DatabaseReference databaseReference = userDatabaseReference.child("profile_pictures");
-
-        return databaseReference;
-    }
-
-    protected DatabaseReference getUserDatabaseReference() {
-
-        DatabaseReference databaseReference = mDatabaseReference.child("user").child(getUid());
-
-        return databaseReference;
-    }
-
-    public static DatabaseReference getUserDatabaseReference(String uid) {
-
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("user").child(uid);
-
-        return databaseReference;
-    }
-
-    protected StorageReference getHighResCoverPhotosStorageReference(String coverPhotoName) {
-
-        StorageReference storageReference = mStorageReference.child("images/" + getUid() + "/cover_photos/high_res/" + coverPhotoName);
-
-        return storageReference;
-    }
-
-    protected StorageReference getHighResProfilePicturesStorageReference(String profilePictureName) {
-
-        StorageReference storageReference = mStorageReference.child("images/" + getUid() + "/profile_pictures/high_res/" + profilePictureName);
-
-        return storageReference;
-    }
-
-    protected StorageReference getLowResCoverPhotosStorageReference(String coverPhotoName) {
-
-        StorageReference storageReference = mStorageReference.child("images/" + getUid() + "/cover_photos/low_res/" + coverPhotoName);
-
-        return storageReference;
-    }
-
-    protected StorageReference getLowResProfilePicturesStorageReference(String profilePictureName) {
-
-        StorageReference storageReference = mStorageReference.child("images/" + getUid() + "/profile_pictures/low_res/" + profilePictureName);
-
-        return storageReference;
-    }
-
-    protected StorageReference getMidResCoverPhotosStorageReference(String coverPhotoName) {
-
-        StorageReference storageReference = mStorageReference.child("images/" + getUid() + "/cover_photos/mid_res/" + coverPhotoName);
-
-        return storageReference;
-    }
-
-    protected StorageReference getMidResProfilePicturesStorageReference(String profilePictureName) {
-
-        StorageReference storageReference = mStorageReference.child("images/" + getUid() + "/profile_pictures/mid_res/" + profilePictureName);
-
-        return storageReference;
     }
 }

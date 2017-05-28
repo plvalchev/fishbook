@@ -4,7 +4,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
 import com.valchev.plamen.fishbook.global.FishbookChildEventListener;
 import com.valchev.plamen.fishbook.global.FishbookValueEventListener;
-import com.valchev.plamen.fishbook.models.Message;
+import com.valchev.plamen.fishbook.global.ValueChangeListener;
 
 import java.util.Collection;
 

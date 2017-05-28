@@ -3,29 +3,24 @@ package com.valchev.plamen.fishbook.home;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
-import android.preference.ListPreference;
 import android.preference.MultiSelectListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
-import android.util.Log;
 import android.widget.DatePicker;
 
 import com.google.firebase.database.DatabaseError;
 import com.valchev.plamen.fishbook.R;
 import com.valchev.plamen.fishbook.global.FishbookUser;
-import com.valchev.plamen.fishbook.global.FishbookUtils;
+import com.valchev.plamen.fishbook.utils.FishbookUtils;
 import com.valchev.plamen.fishbook.models.FishingMethod;
 import com.valchev.plamen.fishbook.models.FishingRegion;
 import com.valchev.plamen.fishbook.models.PersonalInformation;
 import com.valchev.plamen.fishbook.models.Specie;
 import com.valchev.plamen.fishbook.models.User;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 

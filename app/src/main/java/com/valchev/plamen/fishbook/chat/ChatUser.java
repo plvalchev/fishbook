@@ -1,16 +1,11 @@
 package com.valchev.plamen.fishbook.chat;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.ValueEventListener;
 import com.stfalcon.chatkit.commons.models.IUser;
-import com.valchev.plamen.fishbook.global.FishbookUser;
 import com.valchev.plamen.fishbook.global.FishbookValueEventListener;
+import com.valchev.plamen.fishbook.global.ValueChangeListener;
 import com.valchev.plamen.fishbook.models.Image;
 import com.valchev.plamen.fishbook.models.User;
-
-import java.util.ArrayList;
+import com.valchev.plamen.fishbook.utils.FirebaseDatabaseUtils;
 
 /**
  * Created by admin on 21.5.2017 г..
@@ -20,12 +15,12 @@ public class ChatUser extends FishbookValueEventListener<User> implements IUser 
 
     public ChatUser(String key) {
 
-        super( FishbookUser.getUserDatabaseReference(key) );
+        super(FirebaseDatabaseUtils.getUserDatabaseReference(key));
     }
 
     public ChatUser(String key, ValueChangeListener<User> valueChangeListener) {
 
-        super( FishbookUser.getUserDatabaseReference(key), valueChangeListener );
+        super(FirebaseDatabaseUtils.getUserDatabaseReference(key), valueChangeListener);
     }
 
     @Override
@@ -52,11 +47,9 @@ public class ChatUser extends FishbookValueEventListener<User> implements IUser 
 
         String avatar = null;
 
-        if( getValue() != null && getValue().profilePictures != null ) {
+        if( getValue() != null && getValue().profilePicture != null ) {
 
-            Image image = getValue().profilePictures.get(0);
-
-            avatar = image.midResUri;
+            avatar = getValue().profilePicture.midResUri;
         }
 
         return avatar;

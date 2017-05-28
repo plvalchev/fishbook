@@ -13,7 +13,6 @@ import java.util.Map;
 
 public class Post implements Serializable {
 
-    public String key;
     public String userID;
     public String dateTime;
     public String description;
@@ -21,13 +20,13 @@ public class Post implements Serializable {
     public ArrayList<Specie> species;
     public ArrayList<FishingMethod> fishingMethods;
     public ArrayList<Image> images;
+    public Integer imagesCount;
 
     @Exclude
     public Map<String, Object> toMap() {
 
         HashMap<String, Object> result = new HashMap<>();
 
-        result.put("key", key);
         result.put("userID", userID);
         result.put("dateTime", dateTime);
         result.put("description", description);
@@ -35,6 +34,7 @@ public class Post implements Serializable {
         result.put("species", species);
         result.put("fishingMethods", fishingMethods);
         result.put("images", images);
+        result.put("imagesCount", imagesCount);
 
         return result;
     }

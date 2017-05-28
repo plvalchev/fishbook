@@ -1,59 +1,79 @@
 package com.valchev.plamen.fishbook.global;
 
-import android.provider.ContactsContract;
-
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.database.Query;
 import com.google.firebase.storage.StorageReference;
 import com.valchev.plamen.fishbook.models.FishingMethod;
 import com.valchev.plamen.fishbook.models.FishingRegion;
 import com.valchev.plamen.fishbook.models.Image;
 import com.valchev.plamen.fishbook.models.Post;
 import com.valchev.plamen.fishbook.models.Specie;
-import com.valchev.plamen.fishbook.models.User;
+import com.valchev.plamen.fishbook.utils.FirebaseDatabaseUtils;
+import com.valchev.plamen.fishbook.utils.FirebaseStorageUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Created by admin on 7.5.2017 г..
  */
 
-public class FishbookPost implements OnSuccessListener<ArrayList<Image>>, ValueEventListener {
+public class FishbookPost extends FishbookValueEventListener<Post>
+        implements OnSuccessListener<ArrayList<Image>>, ValueChangeListener<ArrayList<Image>> {
 
-    public interface PostValueEventListener {
+    private FishbookImagesEventListener imagesEventListener;
 
-        void onDataChange(Post post);
-        void onCancelled(DatabaseError databaseError);
+    public FishbookPost(Query query) {
+
+        this(query, null);
     }
 
-    protected Post mPost;
-    protected DatabaseReference mDatabaseReference;
-    protected StorageReference mStorageReference;
-    protected ArrayList<PostValueEventListener> mPostValueEventListeners;
+    public FishbookPost(Query query, ValueChangeListener<Post> valueChangeListener) {
 
-    public FishbookPost(Post post) {
+        super(query, valueChangeListener);
 
-        mDatabaseReference = FirebaseDatabase.getInstance().getReference();
-        mStorageReference = FirebaseStorage.getInstance().getReference();
-        mPost = post;
+        String postKey = query.getRef().getKey();
+
+        imagesEventListener =
+                new FishbookImagesEventListener(FirebaseDatabaseUtils.getPostImagesDatabaseReference(postKey), this);
     }
 
-    public void savePost() {
+//    public ArrayList<Image> getImages() {
+//
+//        ArrayList<Image> images = null;
+//
+//        HashMap<String, FishbookValueEventListener<Image>> fishbookValueEventListenerHashMap = imageChildEventListener.getFishbookValueEventListeners();
+//
+//        if( fishbookValueEventListenerHashMap != null ) {
+//
+//            for (FishbookValueEventListener<Image> imageListener: fishbookValueEventListenerHashMap.values()) {
+//
+//                if( imageListener.getValue() == null )
+//                    continue;
+//
+//                if( images == null ) {
+//
+//                    images = new ArrayList<>();
+//                }
+//
+//                images.add(imageListener.getValue());
+//            }
+//        }
+//
+//        return images;
+//    }
+
+    @Override
+    public void update(Post post) {
+
+        setValue(post);
 
         ArrayList<MultipleImageUploader.MultipleImage> multipleImages = null;
 
-        if( mPost.images != null ) {
+        if( post.images != null ) {
 
-            for (Image image : mPost.images ) {
+            for (Image image : post.images) {
 
                 if( image.isUploaded() ) {
 
@@ -65,12 +85,8 @@ public class FishbookPost implements OnSuccessListener<ArrayList<Image>>, ValueE
                     multipleImages = new ArrayList<>();
                 }
 
-                String imageName = "post_" + UUID.randomUUID().toString();
-                StorageReference lowResImageStorageReference = getLowResImageStorageReference(imageName, mPost.userID);
-                StorageReference midResImageStorageReference = getMidResImageStorageReference(imageName, mPost.userID);
-                StorageReference highResImageStorageReference = getHighResImageStorageReference(imageName, mPost.userID);
-                MultipleImageUploader.MultipleImage multipleImage =
-                        new MultipleImageUploader.MultipleImage(image, lowResImageStorageReference, midResImageStorageReference, highResImageStorageReference);
+                StorageReference storageReference = FirebaseStorageUtils.getUserPostsImagesStorageReference(post.userID);
+                MultipleImageUploader.MultipleImage multipleImage = new MultipleImageUploader.MultipleImage(image, storageReference);
 
                 multipleImages.add(multipleImage);
             }
@@ -85,153 +101,115 @@ public class FishbookPost implements OnSuccessListener<ArrayList<Image>>, ValueE
         }
         else {
 
-            savePostInFirebase();
+            Map<String, Object> postImages = new HashMap<>();
+
+            if( post.images != null ) {
+
+                int size = post.images.size();
+
+                for( int index = size - 1; index >= 0; index-- ) {
+
+                    Image image = post.images.get(index);
+
+                    if (image.id == null || image.id.isEmpty()) {
+
+                        image.id = FirebaseDatabaseUtils.getPostImagesDatabaseReference(getKey()).push().getKey();
+                    }
+
+                    postImages.put(image.id, image.toMap());
+
+                    if( index > 3 )
+                        post.images.set(index, null);
+                }
+            }
+
+            post.imagesCount = postImages.size();
+
+            Map<String, Object> postValues = post.toMap();
+            Map<String, Object> childUpdates = new HashMap<>();
+
+            childUpdates.put("/images/posts/" + getKey(), postImages);
+            childUpdates.put("/posts/" + getKey(), postValues);
+            childUpdates.put("/user-posts/" + post.userID + "/" + getKey(), postValues);
+
+            if( post.species != null ) {
+
+                for (Specie specie : post.species) {
+
+                    childUpdates.put("/post-search-index/" + specie.name.toLowerCase() + "/" + getKey(), true);
+                }
+            }
+
+            if( post.fishingMethods != null ) {
+
+                for (FishingMethod method : post.fishingMethods) {
+
+                    childUpdates.put("/post-search-index/" + method.name.toLowerCase() + "/" + getKey(), true);
+                }
+            }
+
+            if( post.fishingRegions != null ) {
+
+                for (FishingRegion region : post.fishingRegions) {
+
+                    childUpdates.put("/post-search-index/" + region.name.toLowerCase() + "/" + getKey(), true);
+                }
+            }
+
+            FirebaseDatabaseUtils.getDatabaseReference().updateChildren(childUpdates);
         }
     }
 
     @Override
     public void onSuccess(ArrayList<Image> images) {
 
-        savePostInFirebase();
+        update(getValue());
     }
 
-    public void deletePost() {
+    public static void deleteCurrentUserPost(String postKey) {
 
         Map<String, Object> childUpdates = new HashMap<>();
 
-        childUpdates.put("/posts/" + mPost.key, null);
-        childUpdates.put("/user-posts/" + mPost.userID + "/" + mPost.key, null);
-        childUpdates.put("/likes/posts/" + mPost.key, null);
+        childUpdates.put("/posts/" + postKey, null);
+        childUpdates.put("/user-posts/" + FishbookUser.getCurrentUser().getUid() + "/" + postKey, null);
+        childUpdates.put("/likes/posts/" + postKey, null);
 
-        mDatabaseReference.updateChildren(childUpdates);
+        FirebaseDatabaseUtils.getDatabaseReference().updateChildren(childUpdates);
     }
 
-    protected void savePostInFirebase() {
+    @Override
+    public void delete() {
 
-        if( mPost.key == null ) {
+        Post post = getValue();
 
-            mPost.key = mDatabaseReference.child("posts").push().getKey();
-        }
-
-        if( mPost.images != null ) {
-
-            int size = mPost.images.size();
-
-            for( int index = 0; index < size; index++ ) {
-
-                Image image = mPost.images.get(index);
-
-                if (image.id == null || image.id.isEmpty()) {
-
-                    image.id = mDatabaseReference.child("posts").child(mPost.key).child("images").push().getKey();
-                }
-            }
-        }
-
-        Map<String, Object> postValues = mPost.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
 
-        childUpdates.put("/posts/" + mPost.key, postValues);
-        childUpdates.put("/user-posts/" + mPost.userID + "/" + mPost.key, postValues);
+        childUpdates.put("/posts/" + getKey(), null);
+        childUpdates.put("/user-posts/" + post.userID + "/" + getKey(), null);
+        childUpdates.put("/likes/posts/" + getKey(), null);
 
-        if( mPost.species != null ) {
-
-            for (Specie specie : mPost.species) {
-
-                childUpdates.put("/post-search-index/" + specie.name.toLowerCase() + "/" + mPost.key, true);
-            }
-        }
-
-        if( mPost.fishingMethods != null ) {
-
-            for (FishingMethod method : mPost.fishingMethods) {
-
-                childUpdates.put("/post-search-index/" + method.name.toLowerCase() + "/" + mPost.key, true);
-            }
-        }
-
-        if( mPost.fishingRegions != null ) {
-
-            for (FishingRegion region : mPost.fishingRegions) {
-
-                childUpdates.put("/post-search-index/" + region.name.toLowerCase() + "/" + mPost.key, true);
-            }
-        }
-
-        mDatabaseReference.updateChildren(childUpdates);
-    }
-
-    public static DatabaseReference getPostsDatabaseReference() {
-
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("posts");
-
-        return databaseReference;
-    }
-
-    public static DatabaseReference getUserPostsDatabaseReference(String uid) {
-
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("user-posts").child(uid);
-
-        return databaseReference;
-    }
-
-    protected StorageReference getHighResImageStorageReference(String imageName, String uid) {
-
-        StorageReference storageReference = mStorageReference.child("images/" + uid + "/posts/high_res/" + imageName);
-
-        return storageReference;
-    }
-
-    protected StorageReference getLowResImageStorageReference(String imageName, String uid) {
-
-        StorageReference storageReference = mStorageReference.child("images/" + uid + "/posts/low_res/" + imageName);
-
-        return storageReference;
-    }
-
-    protected StorageReference getMidResImageStorageReference(String imageName, String uid) {
-
-        StorageReference storageReference = mStorageReference.child("images/" + uid + "/posts/mid_res/" + imageName);
-
-        return storageReference;
+        FirebaseDatabaseUtils.getDatabaseReference().updateChildren(childUpdates);
     }
 
     @Override
-    public void onDataChange(DataSnapshot dataSnapshot) {
+    public void onChange(ArrayList<Image> newData) {
 
-        mPost = dataSnapshot.getValue(Post.class);
+        Post post = getValue();
 
-        if( mPost == null )
-            mPost = new Post();
-
-        if( mPostValueEventListeners != null ) {
-
-            for (PostValueEventListener valueEventListener: mPostValueEventListeners) {
-
-                valueEventListener.onDataChange(mPost);
-            }
-        }
-    }
-
-    @Override
-    public void onCancelled(DatabaseError databaseError) {
-
-    }
-
-    public void addPostValueEventListener(PostValueEventListener valueEventListener) {
-
-        if( mPostValueEventListeners == null ) {
-
-            mPostValueEventListeners = new ArrayList<>();
-        }
-        else if( mPostValueEventListeners.contains(valueEventListener) ) {
+        if( post == null ) {
 
             return;
         }
 
-        mPostValueEventListeners.add(valueEventListener);
+        post.images = newData;
 
-        if( mPost != null )
-            valueEventListener.onDataChange(mPost);
+        triggerChange();
+    }
+
+    public void cleanUp() {
+
+        super.cleanUp();
+
+        imagesEventListener.cleanUp();
     }
 }

@@ -1,6 +1,5 @@
 package com.valchev.plamen.fishbook.home;
 
-import android.app.Activity;
 import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
@@ -9,13 +8,11 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.facebook.drawee.view.SimpleDraweeView;
 import com.google.firebase.database.DatabaseReference;
 import com.joanzapata.iconify.widget.IconButton;
 import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.valchev.plamen.fishbook.R;
-import com.valchev.plamen.fishbook.global.FishbookComment;
-import com.valchev.plamen.fishbook.global.FishbookLike;
+import com.valchev.plamen.fishbook.utils.FirebaseDatabaseUtils;
 import com.valchev.plamen.fishbook.models.Image;
 
 /**
@@ -44,10 +41,10 @@ public class ImageOverlayView extends RelativeLayout {
 
     public void bindImage(Image image) {
 
-        DatabaseReference commentsDatabaseReference = FishbookComment.getImageCommentsDatabaseReference(image.id);
-        DatabaseReference likesDatabaseReference = FishbookLike.getImageLikesDatabaseReference(image.id);
+        DatabaseReference commentsDatabaseReference = FirebaseDatabaseUtils.getImageCommentsDatabaseReference(image.id);
+        DatabaseReference likesDatabaseReference = FirebaseDatabaseUtils.getImageLikesDatabaseReference(image.id);
 
-        mSocialPaneController.setDatabaseReferences(commentsDatabaseReference, likesDatabaseReference);
+        mSocialPaneController.setDatabaseReferences(commentsDatabaseReference, likesDatabaseReference, image.userID);
 
         mDescription.setText(image.caption);
     }

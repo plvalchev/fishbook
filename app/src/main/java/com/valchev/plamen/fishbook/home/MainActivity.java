@@ -1,32 +1,21 @@
 package com.valchev.plamen.fishbook.home;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.TextView;
 
-import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.rohitarya.fresco.facedetection.processor.core.FrescoFaceDetector;
-import com.stfalcon.frescoimageviewer.ImageViewer;
 import com.valchev.plamen.fishbook.R;
-import com.valchev.plamen.fishbook.models.Image;
 
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends FishbookActivity {
 
@@ -199,6 +188,6 @@ public class MainActivity extends FishbookActivity {
 
     public void showFAB(boolean show) {
 
-        mAddNewPostFAB.setVisibility(show ? View.VISIBLE : View.GONE);
+//        mAddNewPostFAB.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 }

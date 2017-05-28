@@ -5,9 +5,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
-import com.valchev.plamen.fishbook.chat.ValueChangeListener;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -16,7 +14,7 @@ import java.util.HashMap;
  * Created by admin on 24.5.2017 г..
  */
 
-public abstract class FishbookChildEventListener<T> implements ChildEventListener, ValueChangeListener<T> {
+public class FishbookChildEventListener<T> implements ChildEventListener, ValueChangeListener<T> {
 
     private HashMap<String, FishbookValueEventListener<T>> fishbookValueEventListeners;
     private ArrayList<ValueChangeListener<Collection<FishbookValueEventListener<T>>>> valuesChangeListeners;
@@ -87,6 +85,11 @@ public abstract class FishbookChildEventListener<T> implements ChildEventListene
     public void onChange(T newData) {
 
         triggerChange();
+    }
+
+    public HashMap<String, FishbookValueEventListener<T>> getFishbookValueEventListeners() {
+
+        return fishbookValueEventListeners;
     }
 
     public void cleanUp() {

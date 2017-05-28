@@ -2,7 +2,6 @@ package com.valchev.plamen.fishbook.authentication;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -14,9 +13,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 
-import com.valchev.plamen.fishbook.global.FishbookApplication;
 import com.valchev.plamen.fishbook.R;
 
 

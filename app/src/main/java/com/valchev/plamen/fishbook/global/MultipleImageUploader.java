@@ -4,7 +4,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -12,8 +11,11 @@ import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.valchev.plamen.fishbook.models.Image;
+import com.valchev.plamen.fishbook.utils.FirebaseStorageUtils;
+import com.valchev.plamen.fishbook.utils.FishbookUtils;
 
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -66,16 +68,12 @@ public class MultipleImageUploader extends AsyncTask<MultipleImageUploader.Multi
     public static class MultipleImage {
 
         public Image image;
-        public StorageReference lowResStorageReference;
-        public StorageReference midResStorageReference;
-        public StorageReference highResStorageReference;
+        public StorageReference storageReference;
 
-        public MultipleImage(Image image, StorageReference lowResStorageReference, StorageReference midResStorageReference, StorageReference highResStorageReference) {
+        public MultipleImage(Image image, StorageReference storageReference) {
 
             this.image = image;
-            this.lowResStorageReference = lowResStorageReference;
-            this.midResStorageReference = midResStorageReference;
-            this.highResStorageReference = highResStorageReference;
+            this.storageReference = storageReference;
         }
     }
 
@@ -109,9 +107,15 @@ public class MultipleImageUploader extends AsyncTask<MultipleImageUploader.Multi
             byte[] midResResByteArray = FishbookUtils.resizeAndCompressImage(image.path, 768, 768);
             byte[] highResByteArray = FishbookUtils.resizeAndCompressImage(image.path, 1280, 1280);
 
-            StorageReference lowResStorageReference = multipleImage.lowResStorageReference;
-            StorageReference midResStorageReference = multipleImage.midResStorageReference;
-            StorageReference highResStorageReference = multipleImage.highResStorageReference;
+            String imageName = UUID.randomUUID().toString();
+
+            StorageReference lowResStorageReference =
+                    FirebaseStorageUtils.getLowResStorageReference(multipleImage.storageReference).child(imageName);
+            StorageReference midResStorageReference =
+                    FirebaseStorageUtils.getMidResStorageReference(multipleImage.storageReference).child(imageName);
+            StorageReference highResStorageReference =
+                    FirebaseStorageUtils.getHighResStorageReference(multipleImage.storageReference).child(imageName);
+
             UploadTask lowResUploadTask = lowResStorageReference.putBytes(lowResResByteArray);
             UploadTask midResUploadTask = midResStorageReference.putBytes(midResResByteArray);
             UploadTask highResUploadTask = highResStorageReference.putBytes(highResByteArray);

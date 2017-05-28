@@ -1,7 +1,5 @@
 package com.valchev.plamen.fishbook.home;
 
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -14,10 +12,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.joanzapata.iconify.widget.IconButton;
 import com.joanzapata.iconify.widget.IconTextView;
-import com.valchev.plamen.fishbook.global.FishbookLike;
+import com.valchev.plamen.fishbook.models.Event;
+import com.valchev.plamen.fishbook.utils.FirebaseDatabaseUtils;
 import com.valchev.plamen.fishbook.global.FishbookUser;
 import com.valchev.plamen.fishbook.models.PersonalInformation;
 import com.valchev.plamen.fishbook.models.User;
+
+import java.util.HashMap;
 
 /**
  * Created by admin on 20.5.2017 г..
@@ -115,7 +116,7 @@ public class SocialPaneController implements  View.OnClickListener {
 
                 setLikeText("John doe");
 
-                userNameDatabaseReference = FishbookUser.getUserDatabaseReference(userID).child("personalInformation");
+                userNameDatabaseReference = FirebaseDatabaseUtils.getUserDatabaseReference(userID).child("personalInformation");
 
                 userNameDatabaseReference.addValueEventListener(userNameChildEventListener);
             }
@@ -169,6 +170,7 @@ public class SocialPaneController implements  View.OnClickListener {
     private int mCommentsCount;
     private DatabaseReference mLikesDatabaseReference;
     private DatabaseReference mCommentsDatabaseReference;
+    private String ownerKey;
     private CommentsBottomSheetDialogFragment mCommentsBottomSheetDialogFragment;
     private AppCompatActivity mActivity;
 
@@ -205,25 +207,41 @@ public class SocialPaneController implements  View.OnClickListener {
 
         if( v == mLikeButton ) {
 
-            FishbookLike fishbookLike = new FishbookLike();
+            Event event = new Event();
 
-            if( isLikedByCurrentUser )
-                fishbookLike.dislike(mLikesDatabaseReference);
-            else
-                fishbookLike.like(mLikesDatabaseReference);
+            event.eventType = mLikesDatabaseReference.getParent().getParent().getKey();
+            event.objectType = mLikesDatabaseReference.getParent().getKey();
+            event.objectKey = mLikesDatabaseReference.getKey();
+            event.userID = FishbookUser.getCurrentUser().getUid();
+            event.eventsCount = mLikesCount + 1;
+
+            DatabaseReference databaseReference = FirebaseDatabaseUtils.getDatabaseReference();
+            HashMap<String, Object> childUpdates = new HashMap<>();
+
+            String likeChild = event.eventType + "/" + event.objectType + "/" + event.objectKey + "/" + event.userID;
+            String eventChild = "user-events/" + ownerKey + "/" + event.eventType + "|" + event.objectType + "|" + event.objectKey;
+
+            childUpdates.put(likeChild, isLikedByCurrentUser ? null : true);
+            childUpdates.put(eventChild, isLikedByCurrentUser ? null : event);
+
+            databaseReference.updateChildren(childUpdates);
 
         } else if( v == mCommentButton  ) {
 
             if( mCommentsBottomSheetDialogFragment == null )
                 mCommentsBottomSheetDialogFragment = new CommentsBottomSheetDialogFragment();
 
-            mCommentsBottomSheetDialogFragment.setDatabaseReferences(mCommentsDatabaseReference, mLikesDatabaseReference);
+            mCommentsBottomSheetDialogFragment.setDatabaseReferences(mCommentsDatabaseReference, mLikesDatabaseReference, ownerKey);
 
             mCommentsBottomSheetDialogFragment.show(mActivity.getSupportFragmentManager(), mCommentsBottomSheetDialogFragment.getTag());
         }
     }
 
-    public void setDatabaseReferences(DatabaseReference commentsDatabaseReference, DatabaseReference likesDatabaseReference) {
+    public void setDatabaseReferences(DatabaseReference commentsDatabaseReference,
+                                      DatabaseReference likesDatabaseReference,
+                                      String ownerKey) {
+
+        this.ownerKey = ownerKey;
 
         mCommentsCount = 0;
 
@@ -317,5 +335,4 @@ public class SocialPaneController implements  View.OnClickListener {
                 break;
         }
     }
-
 }

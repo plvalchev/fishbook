@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import com.joanzapata.iconify.widget.IconButton;
 import com.valchev.plamen.fishbook.R;
 import com.valchev.plamen.fishbook.global.FishbookPost;
-import com.valchev.plamen.fishbook.models.Post;
+import com.valchev.plamen.fishbook.utils.FirebaseDatabaseUtils;
 
 /**
  * Created by admin on 14.5.2017 г..
@@ -20,7 +20,7 @@ public class PostBottomSheetDialogFragment extends BottomSheetDialogFragment imp
 
     protected IconButton mEditButton;
     protected IconButton mDeleteButton;
-    protected Post mPost;
+    protected String key;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -37,31 +37,28 @@ public class PostBottomSheetDialogFragment extends BottomSheetDialogFragment imp
         return view;
     }
 
-    void setPost(Post post) {
+    void setPost(String key) {
 
-        mPost = post;
+        this.key = key;
     }
 
     @Override
     public void onClick(View v) {
 
-        if( mPost == null )
+        if( key == null )
             return;
 
         if( v == mDeleteButton ) {
 
-            FishbookPost fishbookPost = new FishbookPost(mPost);
-
-            fishbookPost.deletePost();
+            FishbookPost.deleteCurrentUserPost(key);
 
         } else {
 
             Intent intent = new Intent(getActivity(), PostActivity.class);
             Bundle bundle = new Bundle();
 
-            bundle.putSerializable("Post", mPost);
+            bundle.putSerializable("key", this.key);
             intent.putExtras(bundle);
-
 
             getActivity().startActivity(intent);
         }

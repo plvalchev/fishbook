@@ -4,11 +4,9 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.widget.ImageView;
 
 import com.facebook.common.executors.CallerThreadExecutor;
-import com.facebook.common.internal.Objects;
 import com.facebook.common.references.CloseableReference;
 import com.facebook.datasource.DataSource;
 import com.facebook.drawee.backends.pipeline.Fresco;
@@ -17,19 +15,18 @@ import com.facebook.imagepipeline.datasource.BaseBitmapDataSubscriber;
 import com.facebook.imagepipeline.image.CloseableImage;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
-import com.google.firebase.database.ValueEventListener;
 import com.stfalcon.chatkit.commons.ImageLoader;
 import com.stfalcon.chatkit.messages.MessageInput;
 import com.stfalcon.chatkit.messages.MessagesList;
 import com.stfalcon.chatkit.messages.MessagesListAdapter;
 import com.valchev.plamen.fishbook.R;
+import com.valchev.plamen.fishbook.global.ValueChangeListener;
+import com.valchev.plamen.fishbook.utils.FirebaseDatabaseUtils;
 import com.valchev.plamen.fishbook.global.FishbookUser;
 import com.valchev.plamen.fishbook.global.FishbookValueEventListener;
 import com.valchev.plamen.fishbook.home.FishbookActivity;
@@ -48,9 +45,9 @@ import java.util.Map;
  */
 
 public class ChatActivity extends FishbookActivity
-        implements ValueChangeListener<Collection<FishbookValueEventListener<Message>>>, MessageInput.InputListener {
+        implements ValueChangeListener<Collection<FishbookValueEventListener<Message>>>,
+        ImageLoader, MessageInput.InputListener {
 
-    private HashMap<String, Object> messagesInAdapter;
     private MessagesListAdapter<ChatMessage> messagesListAdapter;
     private MessagesList messagesList;
     private MessageInput messageInput;
@@ -67,7 +64,6 @@ public class ChatActivity extends FishbookActivity
 
         messagesList = (MessagesList) findViewById(R.id.messagesList);
         messageInput = (MessageInput) findViewById(R.id.input);
-        messagesInAdapter = new HashMap<>();
 
         messageInput.setInputListener(this);
 
@@ -80,38 +76,7 @@ public class ChatActivity extends FishbookActivity
             @Override
             public void loadImage(final ImageView imageView, String url) {
 
-                ImagePipeline imagePipeline = Fresco.getImagePipeline();
-                ImageRequest imageRequest = ImageRequestBuilder
-                        .newBuilderWithSource(Uri.parse(url))
-                        .build();
 
-                DataSource<CloseableReference<CloseableImage>> dataSource =
-                        imagePipeline.fetchDecodedImage(imageRequest, this);
-
-                try {
-
-                    dataSource.subscribe(new BaseBitmapDataSubscriber() {
-
-                        @Override
-                        public void onNewResultImpl(@Nullable Bitmap bitmap) {
-
-                            imageView.setImageBitmap(bitmap);
-                        }
-
-                        @Override
-                        public void onFailureImpl(DataSource dataSource) {
-
-
-                        }
-
-                    }, CallerThreadExecutor.getInstance());
-
-                } finally {
-
-                    if (dataSource != null) {
-                        dataSource.close();
-                    }
-                }
             }
         });
 
@@ -134,17 +99,16 @@ public class ChatActivity extends FishbookActivity
 
         String chatKey = getChatKey();
 
-        chatMessagesChildEventListener = new ChatMessagesChildEventListener(FirebaseDatabase.getInstance().getReference().child("messages").child(chatKey), this);
+        DatabaseReference chatMessagesDatabaseReference = FirebaseDatabaseUtils.getChatMessagesDatabaseReference(chatKey);
+        DatabaseReference unreadMessagesDatabaseReference = FirebaseDatabaseUtils.getCurrentUserUnreadMessagesDatabaseReference(chatKey);
 
-        DatabaseReference unreadMessagesDatabaseReference = FirebaseDatabase.getInstance().getReference()
-                .child("unread-messages").child(chatKey).child(sender.getId());
-
+        chatMessagesChildEventListener = new ChatMessagesChildEventListener(chatMessagesDatabaseReference, this);
         unreadChatMessages = new UnreadChatMessages(unreadMessagesDatabaseReference, new ValueChangeListener<Long>() {
 
             @Override
             public void onChange(Long newData) {
 
-                unreadChatMessages.setValue(null);
+                unreadChatMessages.delete();
             }
         });
     }
@@ -157,6 +121,7 @@ public class ChatActivity extends FishbookActivity
         userIDArrayList.add(receiver.getId());
 
         Collections.sort(userIDArrayList, new Comparator<String>() {
+
             @Override
             public int compare(String s1, String s2) {
                 return s1.compareToIgnoreCase(s2);
@@ -179,34 +144,56 @@ public class ChatActivity extends FishbookActivity
     @Override
     public void onChange(Collection<FishbookValueEventListener<Message>> newData) {
 
+        messagesListAdapter.clear();
 
-        if( newData == null || newData.size() == 0 ) {
+        if( newData != null ) {
 
-            messagesListAdapter.clear();
-            return;
-        }
+            ArrayList<FishbookValueEventListener<Message>> arrayList = new ArrayList<>(newData);
 
-        for (FishbookValueEventListener<Message> fishbookValueEventListener : newData) {
+            Collections.sort(arrayList, new Comparator<FishbookValueEventListener<Message>>() {
 
-            ChatMessage chatMessage = (ChatMessage) fishbookValueEventListener;
+                @Override
+                public int compare(FishbookValueEventListener<Message> valueListener1, FishbookValueEventListener<Message> valueListener2) {
 
-            if( chatMessage == null ||
-                    chatMessage.getUser() == null ||
-                    chatMessage.getValue() == null ) {
+                    ChatMessage chatMessage1 = (ChatMessage) valueListener1;
+                    ChatMessage chatMessage2 = (ChatMessage) valueListener2;
+                    Message message1 = chatMessage1.getValue();
+                    Message message2 = chatMessage2.getValue();
 
-                continue;
-            }
+                    if (message1 == message2)
+                        return 0;
 
-            if( messagesInAdapter.containsKey(chatMessage.getId()) ) {
+                    if (message1 == null && message2 != null)
+                        return 1;
 
-                messagesListAdapter.update(chatMessage);
-            }
-            else {
+                    if (message1 != null && message2 == null)
+                        return -1;
 
-                messagesInAdapter.put(chatMessage.getId(), null);
+                    Long invertedDateTime1 = message1.invertedDateTime;
+                    Long invertedDateTime2 = message2.invertedDateTime;
+
+                    return invertedDateTime2.compareTo(invertedDateTime1);
+                }
+
+            });
+
+            for (FishbookValueEventListener<Message> fishbookValueEventListener : arrayList) {
+
+                ChatMessage chatMessage = (ChatMessage) fishbookValueEventListener;
+
+                if (chatMessage == null ||
+                        chatMessage.getUser() == null ||
+                        chatMessage.getValue() == null) {
+
+                    continue;
+                }
+
                 messagesListAdapter.addToStart(chatMessage, true);
             }
         }
+
+        messagesList.setAdapter(messagesListAdapter);
+        messagesListAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -220,16 +207,17 @@ public class ChatActivity extends FishbookActivity
         Map<String, Object> messageMap = message.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
         String chatKey = getChatKey();
-        String messageKey = FirebaseDatabase.getInstance().getReference().child("messages").child(chatKey).push().getKey();
+
+        String messageKey = FirebaseDatabaseUtils.getChatMessagesDatabaseReference(chatKey).push().getKey();
 
         childUpdates.put("/messages/" + chatKey + "/" + messageKey, messageMap);
         childUpdates.put("/user-chats/" + sender.getId() + "/" + chatKey, receiver.getId());
         childUpdates.put("/user-chats/" + receiver.getId() + "/" + chatKey, sender.getId());
 
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        DatabaseReference databaseReference = FirebaseDatabaseUtils.getDatabaseReference();
         databaseReference.updateChildren(childUpdates);
 
-        DatabaseReference receiverUnreadMessages = FirebaseDatabase.getInstance().getReference().child("unread-messages").child(chatKey).child(receiver.getId());
+        DatabaseReference receiverUnreadMessages = FirebaseDatabaseUtils.getUserUnreadMessagesDatabaseReference(chatKey, receiver.getId());
 
         receiverUnreadMessages.runTransaction(new Transaction.Handler() {
 
@@ -257,5 +245,49 @@ public class ChatActivity extends FishbookActivity
         });
 
         return true;
+    }
+
+    @Override
+    public void loadImage(final ImageView imageView, String url) {
+
+        class BitmapDataSubscriber extends BaseBitmapDataSubscriber {
+
+            private ImageView imageView;
+
+            private BitmapDataSubscriber(ImageView imageView) {
+
+                this.imageView = imageView;
+            }
+
+            @Override
+            protected void onNewResultImpl(@javax.annotation.Nullable Bitmap bitmap) {
+
+                imageView.setImageBitmap(bitmap);
+            }
+
+            @Override
+            protected void onFailureImpl(DataSource<CloseableReference<CloseableImage>> dataSource) {
+
+            }
+        }
+
+        ImagePipeline imagePipeline = Fresco.getImagePipeline();
+        ImageRequest imageRequest = ImageRequestBuilder
+                .newBuilderWithSource(Uri.parse(url))
+                .build();
+
+        DataSource<CloseableReference<CloseableImage>> dataSource =
+                imagePipeline.fetchDecodedImage(imageRequest, this);
+
+        try {
+
+            dataSource.subscribe(new BitmapDataSubscriber(imageView), CallerThreadExecutor.getInstance());
+
+        } finally {
+
+            if (dataSource != null) {
+                dataSource.close();
+            }
+        }
     }
 }

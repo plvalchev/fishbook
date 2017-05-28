@@ -25,6 +25,6 @@ public class FeedIndexedRecyclerViewAdapter extends FirebaseIndexRecyclerAdapter
 
         viewHolder.mActivity = mActivity;
 
-        viewHolder.bindPost(model);
+        viewHolder.bindPost(model, getRef(position).getKey());
     }
 }

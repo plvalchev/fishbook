@@ -1,16 +1,14 @@
-package com.valchev.plamen.fishbook.global;
+package com.valchev.plamen.fishbook.utils;
 
 import android.graphics.Bitmap;
 
-import com.google.firebase.storage.StorageReference;
-import com.nguyenhoanglam.imagepicker.model.Image;
+import com.valchev.plamen.fishbook.global.FishbookApplication;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.OutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -42,7 +40,7 @@ public class FishbookUtils {
 
     public static boolean compressImage(Bitmap bitmap, OutputStream stream) {
 
-        return bitmap.compress(Bitmap.CompressFormat.WEBP, 100, stream);
+        return bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
     }
 
     public static Bitmap resizeImage(File file, float maxWidth, float maxHeight) {

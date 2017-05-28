@@ -20,8 +20,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.joanzapata.iconify.widget.IconButton;
 import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.valchev.plamen.fishbook.R;
-import com.valchev.plamen.fishbook.global.FishbookComment;
-import com.valchev.plamen.fishbook.global.FishbookLike;
+import com.valchev.plamen.fishbook.utils.FirebaseDatabaseUtils;
 import com.valchev.plamen.fishbook.global.FishbookUser;
 import com.valchev.plamen.fishbook.models.Image;
 import com.valchev.plamen.fishbook.models.Post;
@@ -76,6 +75,7 @@ public class FeedViewHolder extends RecyclerView.ViewHolder implements View.OnCl
     protected LinearLayout mUserInfoLayout;
     protected AuthorValueEventListener mAuthorValueEventListener;
     protected SocialPaneController mSocialPaneController;
+    protected String key;
     public PostBottomSheetDialogFragment mPostBottomSheetDialogFragment;
     public FishbookActivity mActivity;
 
@@ -122,7 +122,9 @@ public class FeedViewHolder extends RecyclerView.ViewHolder implements View.OnCl
         mAuthorValueEventListener = new AuthorValueEventListener();
     }
 
-    public void bindPost(Post post) {
+    public void bindPost(Post post, String key) {
+
+        this.key = key;
 
         boolean loadUser = mPost == null || mPost.userID.compareToIgnoreCase(post.userID) != 0;
 
@@ -139,7 +141,7 @@ public class FeedViewHolder extends RecyclerView.ViewHolder implements View.OnCl
                 mUserDatabaseReference.removeEventListener(mAuthorValueEventListener);
             }
 
-            mUserDatabaseReference = FishbookUser.getUserDatabaseReference(mPost.userID);
+            mUserDatabaseReference = FirebaseDatabaseUtils.getUserDatabaseReference(mPost.userID);
 
             mUserDatabaseReference.addValueEventListener(mAuthorValueEventListener);
         }
@@ -155,10 +157,10 @@ public class FeedViewHolder extends RecyclerView.ViewHolder implements View.OnCl
         mPostDate.setText(mPost.dateTime);
         mDescription.setText(mPost.description);
 
-        DatabaseReference commentsDatabaseReference = FishbookComment.getPostCommentsDatabaseReference(mPost.key);
-        DatabaseReference likesDatabaseReference = FishbookLike.getPostLikesDatabaseReference(mPost.key);
+        DatabaseReference commentsDatabaseReference = FirebaseDatabaseUtils.getPostCommentsDatabaseReference(this.key);
+        DatabaseReference likesDatabaseReference = FirebaseDatabaseUtils.getPostLikesDatabaseReference(this.key);
 
-        mSocialPaneController.setDatabaseReferences(commentsDatabaseReference, likesDatabaseReference);
+        mSocialPaneController.setDatabaseReferences(commentsDatabaseReference, likesDatabaseReference, mPost.userID);
         mSocialPaneController.setActivity(mActivity);
 
         if( mPost.images == null || mPost.images.size() == 0 ) {
@@ -186,6 +188,7 @@ public class FeedViewHolder extends RecyclerView.ViewHolder implements View.OnCl
 
                 subRecyclerViewIndex = 2;
                 mainStaggeredGridLayoutManagerOrientation = StaggeredGridLayoutManager.HORIZONTAL;
+
             }
 
             mMainStaggeredGridLayoutManager.setOrientation(mainStaggeredGridLayoutManagerOrientation);
@@ -199,6 +202,14 @@ public class FeedViewHolder extends RecyclerView.ViewHolder implements View.OnCl
                 }
 
                 subImageArrayList.add(mPost.images.get(index));
+            }
+
+            if( mPost.imagesCount != null) {
+
+                for (int index = size; index < mPost.imagesCount; index++) {
+
+                    subImageArrayList.add(null);
+                }
             }
 
             mSubRecyclerViewAdapter.setImageList(null, subImageArrayList);
@@ -220,9 +231,9 @@ public class FeedViewHolder extends RecyclerView.ViewHolder implements View.OnCl
 
             displayName = mUserData.getDisplayName();
 
-            if( mUserData.profilePictures != null && mUserData.profilePictures.size() > 0 ) {
+            if( mUserData.profilePicture != null ) {
 
-                profilePicture = mUserData.profilePictures.get(0);
+                profilePicture = mUserData.profilePicture;
             }
         }
 
@@ -252,7 +263,7 @@ public class FeedViewHolder extends RecyclerView.ViewHolder implements View.OnCl
                 mPostBottomSheetDialogFragment = new PostBottomSheetDialogFragment();
             }
 
-            mPostBottomSheetDialogFragment.setPost(mPost);
+            mPostBottomSheetDialogFragment.setPost(key);
 
             mPostBottomSheetDialogFragment.show(mActivity.getSupportFragmentManager(), mPostBottomSheetDialogFragment.getTag());
 
@@ -279,7 +290,7 @@ public class FeedViewHolder extends RecyclerView.ViewHolder implements View.OnCl
                 return;
             }
 
-            mActivity.showImages(0, mPost.images);
+            mActivity.showImages(FirebaseDatabaseUtils.getPostImagesDatabaseReference(key));
         }
     }
 }

@@ -1,11 +1,15 @@
 package com.valchev.plamen.fishbook.global;
 
+import android.view.View;
+
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.valchev.plamen.fishbook.chat.ValueChangeListener;
+import com.valchev.plamen.fishbook.models.Post;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 
@@ -15,9 +19,13 @@ import java.util.ArrayList;
 
 public class FishbookValueEventListener<T> implements ValueEventListener {
 
-    private ArrayList<ValueChangeListener<T>> valueChangeListeners;
-    private Query query;
-    private T value;
+    protected ArrayList<ValueChangeListener<T>> valueChangeListeners;
+    protected Query query;
+    protected T value;
+
+    protected FishbookValueEventListener() {
+
+    }
 
     public FishbookValueEventListener(Query query) {
 
@@ -102,9 +110,14 @@ public class FishbookValueEventListener<T> implements ValueEventListener {
         return value;
     }
 
-    public void setValue(T value) {
+    public void delete() {
 
-        this.value = value;
+        query.getRef().setValue(null);
+    }
+
+    public void update(T value) {
+
+        setValue(value);
 
         query.getRef().setValue(this.value);
     }
@@ -118,5 +131,10 @@ public class FishbookValueEventListener<T> implements ValueEventListener {
                 valueChangeListener.onChange(value);
             }
         }
+    }
+
+    protected void setValue(T value) {
+
+        this.value = value;
     }
 }

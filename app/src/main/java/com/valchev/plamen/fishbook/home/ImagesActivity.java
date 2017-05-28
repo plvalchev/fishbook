@@ -2,7 +2,6 @@ package com.valchev.plamen.fishbook.home;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,9 +16,7 @@ import com.valchev.plamen.fishbook.R;
 import com.valchev.plamen.fishbook.models.Image;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class ImagesActivity extends FishbookActivity {
 

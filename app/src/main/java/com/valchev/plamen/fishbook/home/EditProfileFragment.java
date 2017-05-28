@@ -3,10 +3,9 @@ package com.valchev.plamen.fishbook.home;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -15,7 +14,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.beloo.widget.chipslayoutmanager.util.log.Log;
@@ -24,15 +22,13 @@ import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.vision.text.Line;
 import com.google.firebase.database.DatabaseError;
-import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.nguyenhoanglam.imagepicker.activity.ImagePicker;
 import com.nguyenhoanglam.imagepicker.activity.ImagePickerActivity;
 import com.nguyenhoanglam.imagepicker.model.Image;
 import com.valchev.plamen.fishbook.R;
 import com.valchev.plamen.fishbook.chat.ChatActivity;
-import com.valchev.plamen.fishbook.global.FishbookPost;
+import com.valchev.plamen.fishbook.utils.FirebaseDatabaseUtils;
 import com.valchev.plamen.fishbook.global.FishbookUser;
 import com.valchev.plamen.fishbook.models.User;
 
@@ -59,10 +55,6 @@ public class EditProfileFragment extends Fragment {
     protected SimpleDraweeView mProfilePicture;
     protected SimpleDraweeView mCoverPhoto;
     protected PopupMenu mPopupMenu;
-    protected ArrayList<com.valchev.plamen.fishbook.models.Image> mProfilePictures;
-    protected ArrayList<com.valchev.plamen.fishbook.models.Image> mCoverPhotos;
-    protected int mProfilePicturesCurrentPosition;
-    protected int mCoverPhotosCurrentPosition;
     protected Button mSendMessageButton;
     protected LinearLayout mLayoutUserInfo;
     protected RecyclerView mRecyclerView;
@@ -71,8 +63,6 @@ public class EditProfileFragment extends Fragment {
 
     public EditProfileFragment() {
 
-        mProfilePicturesCurrentPosition = -1;
-        mCoverPhotosCurrentPosition = -1;
         mUserData = new User();
     }
 
@@ -134,7 +124,7 @@ public class EditProfileFragment extends Fragment {
             mFishbookUser = FishbookUser.getCurrentUser();
         }
 
-        mFeedRecyclerViewAdapter = new FeedRecyclerViewAdapter(FishbookPost.getUserPostsDatabaseReference(mFishbookUser.getUid()), activity);
+        mFeedRecyclerViewAdapter = new FeedRecyclerViewAdapter(FirebaseDatabaseUtils.getUserPostsDatabaseReference(mFishbookUser.getUid()), activity);
         mRecyclerView.setAdapter(mFeedRecyclerViewAdapter);
 
         initUserProfile();
@@ -198,13 +188,9 @@ public class EditProfileFragment extends Fragment {
         mMostChasedSpecies.setText(mUserData.getMostChasedSpeciesAsStringAsString());
         mFishingMethods.setText(mUserData.getFishingMethodsAsString());
 
-        mProfilePictures = null;
+        if( mUserData.profilePicture != null ) {
 
-        if( mUserData.profilePictures != null && mUserData.profilePictures.size() > 0 ) {
-
-            mProfilePictures = mUserData.profilePictures;
-
-            com.valchev.plamen.fishbook.models.Image actualProfilePicture = mProfilePictures.get(0);
+            com.valchev.plamen.fishbook.models.Image actualProfilePicture = mUserData.profilePicture;
 
             DraweeController controller = Fresco.newDraweeControllerBuilder()
                     .setLowResImageRequest(ImageRequest.fromUri(actualProfilePicture.lowResUri))
@@ -218,18 +204,21 @@ public class EditProfileFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
 
-                    showImages(0, mProfilePictures);
+                    Activity activity = getActivity();
+
+                    if( activity != null && activity instanceof FishbookActivity ) {
+
+                        FishbookActivity fishbookActivity = (FishbookActivity) activity;
+
+                        fishbookActivity.showImages(FirebaseDatabaseUtils.getUserProfileImagesDatabaseReference(mFishbookUser.getUid()));
+                    }
                 }
             });
         }
 
-        mCoverPhotos = null;
+        if( mUserData.coverPhoto != null ) {
 
-        if( mUserData.coverPhotos != null && mUserData.coverPhotos.size() > 0 ) {
-
-            mCoverPhotos = mUserData.coverPhotos;
-
-            com.valchev.plamen.fishbook.models.Image actualCoverPhoto = mUserData.coverPhotos.get(0);
+            com.valchev.plamen.fishbook.models.Image actualCoverPhoto = mUserData.coverPhoto;
 
             DraweeController controller = Fresco.newDraweeControllerBuilder()
                     .setLowResImageRequest(ImageRequest.fromUri(actualCoverPhoto.lowResUri))
@@ -243,21 +232,16 @@ public class EditProfileFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
 
-                    showImages(0, mCoverPhotos);
+                    Activity activity = getActivity();
+
+                    if( activity != null && activity instanceof FishbookActivity ) {
+
+                        FishbookActivity fishbookActivity = (FishbookActivity) activity;
+
+                        fishbookActivity.showImages(FirebaseDatabaseUtils.getUserCoverImagesDatabaseReference(mFishbookUser.getUid()));
+                    }
                 }
             });
-        }
-    }
-
-    void showImages(int nStartPosition, ArrayList<com.valchev.plamen.fishbook.models.Image> images) {
-
-        Activity activity = getActivity();
-
-        if( activity != null && activity instanceof FishbookActivity ) {
-
-            FishbookActivity fishbookActivity = (FishbookActivity) activity;
-
-            fishbookActivity.showImages(nStartPosition, images);
         }
     }
 

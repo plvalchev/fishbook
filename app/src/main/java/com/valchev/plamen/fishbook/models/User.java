@@ -3,10 +3,10 @@ package com.valchev.plamen.fishbook.models;
 
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
-import com.stfalcon.chatkit.commons.models.IUser;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -17,17 +17,11 @@ import java.util.Map;
 public class User implements Serializable {
 
     public PersonalInformation personalInformation;
-    public ArrayList<Image> coverPhotos;
-    public ArrayList<Image> profilePictures;
+    public Image coverPhoto;
+    public Image profilePicture;
 
     public User() {
 
-    }
-
-    public User(PersonalInformation personalInformation, ArrayList<Image> coverPhotos, ArrayList<Image> profilePictures) {
-        this.personalInformation = personalInformation;
-        this.coverPhotos = coverPhotos;
-        this.profilePictures = profilePictures;
     }
 
     @Exclude
@@ -143,5 +137,17 @@ public class User implements Serializable {
         String defaultFishingMethods = "Unknown";
 
         return defaultFishingMethods;
+    }
+
+    @Exclude
+    public Map<String, Object> toMap() {
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        result.put("personalInformation", personalInformation);
+        result.put("coverPhotos", coverPhoto);
+        result.put("profilePictures", profilePicture);
+
+        return result;
     }
 }

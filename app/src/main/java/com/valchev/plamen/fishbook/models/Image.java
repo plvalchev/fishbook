@@ -1,11 +1,9 @@
 package com.valchev.plamen.fishbook.models;
 
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.Exclude;
 import com.valchev.plamen.fishbook.global.FishbookUser;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 

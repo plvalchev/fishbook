@@ -22,6 +22,7 @@ import com.valchev.plamen.fishbook.global.FishbookUser;
 import com.valchev.plamen.fishbook.models.Comment;
 import com.valchev.plamen.fishbook.models.Image;
 import com.valchev.plamen.fishbook.models.User;
+import com.valchev.plamen.fishbook.utils.FirebaseDatabaseUtils;
 
 /**
  * Created by admin on 20.5.2017 г..
@@ -96,7 +97,7 @@ public class CommentRecyclerViewAdapter extends FirebaseRecyclerAdapter<Comment,
                     mUserDatabaseReference.removeEventListener(mAuthorValueEventListener);
                 }
 
-                mUserDatabaseReference = FishbookUser.getUserDatabaseReference(mComment.userID);
+                mUserDatabaseReference = FirebaseDatabaseUtils.getUserDatabaseReference(mComment.userID);
 
                 mUserDatabaseReference.addValueEventListener(mAuthorValueEventListener);
             }
@@ -122,9 +123,9 @@ public class CommentRecyclerViewAdapter extends FirebaseRecyclerAdapter<Comment,
 
                 displayName = mUserData.getDisplayName();
 
-                if( mUserData.profilePictures != null && mUserData.profilePictures.size() > 0 ) {
+                if( mUserData.profilePicture != null ) {
 
-                    profilePicture = mUserData.profilePictures.get(0);
+                    profilePicture = mUserData.profilePicture;
                 }
             }
 

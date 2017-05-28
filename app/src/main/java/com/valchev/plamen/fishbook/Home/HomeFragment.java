@@ -9,8 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.valchev.plamen.fishbook.global.FishbookApplication;
 import com.valchev.plamen.fishbook.R;
+import com.valchev.plamen.fishbook.global.FishbookApplication;
 
 import java.util.ArrayList;
 

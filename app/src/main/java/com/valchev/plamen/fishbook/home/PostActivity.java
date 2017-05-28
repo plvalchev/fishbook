@@ -26,9 +26,11 @@ import com.pchmn.materialchips.model.Chip;
 import com.pchmn.materialchips.model.ChipInterface;
 import com.rohitarya.fresco.facedetection.processor.core.FrescoFaceDetector;
 import com.valchev.plamen.fishbook.R;
+import com.valchev.plamen.fishbook.global.ValueChangeListener;
 import com.valchev.plamen.fishbook.global.FishbookPost;
 import com.valchev.plamen.fishbook.global.FishbookUser;
-import com.valchev.plamen.fishbook.global.FishbookUtils;
+import com.valchev.plamen.fishbook.utils.FirebaseDatabaseUtils;
+import com.valchev.plamen.fishbook.utils.FishbookUtils;
 import com.valchev.plamen.fishbook.models.FishingMethod;
 import com.valchev.plamen.fishbook.models.FishingRegion;
 import com.valchev.plamen.fishbook.models.Image;
@@ -40,7 +42,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PostActivity extends AppCompatActivity implements View.OnClickListener, ImageRecyclerViewAdapter.OnImageDeleteListener {
+public class PostActivity extends AppCompatActivity implements View.OnClickListener,
+        ImageRecyclerViewAdapter.OnImageDeleteListener, ValueChangeListener<Post> {
 
     private final static int REQUEST_CODE_PHOTOS = 2000;
     private final static int REQUEST_CODE_PREVIEW_IMAGES = 2001;
@@ -69,7 +72,6 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
     protected ChipsInput mSpeciesChipsInput;
     protected ChipsInput mFishingMethodChipsInput;
     protected FishbookPost mFishbookPost;
-    protected Post mPost;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +104,8 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
         mOriginImages = new ArrayList<>();
         mImageList = new ArrayList<>();
 
+        String postKey = null;
+
         if( savedInstanceState != null ) {
 
             mOriginImages = savedInstanceState.getParcelableArrayList(KEY_ORIGIN_IMAGES);
@@ -120,45 +124,16 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
 
             if( bundle != null ) {
 
-                mPost = (Post) bundle.getSerializable("Post");
-            }
-
-            if (mPost != null) {
-
-                loadPost();
-            }
-        }
-    }
-
-    protected void loadPost() {
-
-        setImageListToRecyclerViews(mPost.images);
-
-        mDescription.setText(mPost.description);
-
-        if( mPost.species != null ) {
-
-            for (Specie specie : mPost.species) {
-
-                mSpeciesChipsInput.addChip(new Chip(specie.name, null));
+                postKey =  bundle.getString("key");
             }
         }
 
-        if( mPost.fishingRegions != null ) {
+        if (postKey == null || postKey.isEmpty()) {
 
-            for (FishingRegion region : mPost.fishingRegions) {
-
-                mFishingRegionChipsInput.addChip(new Chip(region.name, null));
-            }
+            postKey = FirebaseDatabaseUtils.getPostsDatabaseReference().push().getKey();
         }
 
-        if( mPost.fishingMethods != null ) {
-
-            for (FishingMethod method : mPost.fishingMethods) {
-
-                mFishingMethodChipsInput.addChip(new Chip(method.name, null));
-            }
-        }
+        mFishbookPost = new FishbookPost(FirebaseDatabaseUtils.getPostDatabaseReference(postKey), this);
     }
 
     @Override
@@ -256,9 +231,9 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
 
                 if( user != null ) {
 
-                    if( user.profilePictures != null ) {
+                    if( user.profilePicture != null ) {
 
-                        com.valchev.plamen.fishbook.models.Image actualProfilePicture = user.profilePictures.get(0);
+                        com.valchev.plamen.fishbook.models.Image actualProfilePicture = user.profilePicture;
 
                         DraweeController controller = Fresco.newDraweeControllerBuilder()
                                 .setLowResImageRequest(ImageRequest.fromUri(actualProfilePicture.lowResUri))
@@ -332,7 +307,6 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     }
-
 
     protected void initRecyclerView() {
 
@@ -424,6 +398,11 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
     protected void setSelectedImageListToRecyclerViews(ArrayList<com.nguyenhoanglam.imagepicker.model.Image> imageArrayList) {
 
         ArrayList<Image> imageModelArrayList = new ArrayList<>();
+
+        if( mImageList == null ) {
+
+            mImageList = new ArrayList<>();
+        }
 
         imageModelArrayList.addAll(mImageList);
 
@@ -543,33 +522,35 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
 
     protected void post() {
 
-        if( mPost == null ) {
+        Post post = mFishbookPost.getValue();
 
-            mPost = new Post();
+        if( post == null ) {
+
+            post = new Post();
         }
 
-        mPost.userID = mFishbookUser.getUid();
+        post.userID = mFishbookUser.getUid();
 
         String description = mDescription.getText().toString();
 
         if( !description.isEmpty() )
-            mPost.description = description;
+            post.description = description;
         else
-            mPost.description = null;
+            post.description = null;
 
-        if( mPost.dateTime == null ) {
+        if( post.dateTime == null ) {
 
-            mPost.dateTime = FishbookUtils.getCurrentDateTime();
+            post.dateTime = FishbookUtils.getCurrentDateTime();
         }
 
-        mPost.images = mImageList;
+        post.images = mImageList;
 
-        if( mPost.images != null && mPost.images.size() == 1 ) {
+        if( post.images != null && post.images.size() == 1 ) {
 
-            if( mPost.description != null && mPost.images.get(0).caption == null ) {
-                mPost.images.get(0).caption = mPost.description;
-            } else if( mPost.description == null ) {
-                mPost.description = mPost.images.get(0).caption;
+            if( post.description != null && post.images.get(0).caption == null ) {
+                post.images.get(0).caption = post.description;
+            } else if( post.description == null ) {
+                post.description = post.images.get(0).caption;
             }
         }
 
@@ -577,51 +558,83 @@ public class PostActivity extends AppCompatActivity implements View.OnClickListe
 
         for (ChipInterface chip: selectedChipList) {
 
-            if( mPost.fishingRegions == null ) {
+            if( post.fishingRegions == null ) {
 
-                mPost.fishingRegions = new ArrayList<>();
+                post.fishingRegions = new ArrayList<>();
             }
 
-            mPost.fishingRegions.clear();
+            post.fishingRegions.clear();
 
-            mPost.fishingRegions.add(new FishingRegion(chip.getLabel()));
+            post.fishingRegions.add(new FishingRegion(chip.getLabel()));
         }
 
         selectedChipList = mFishingMethodChipsInput.getSelectedChipList();
 
         for (ChipInterface chip: selectedChipList) {
 
-            if( mPost.fishingMethods == null ) {
+            if( post.fishingMethods == null ) {
 
-                mPost.fishingMethods = new ArrayList<>();
+                post.fishingMethods = new ArrayList<>();
             }
 
-            mPost.fishingMethods.clear();
+            post.fishingMethods.clear();
 
-            mPost.fishingMethods.add(new FishingMethod(chip.getLabel()));
+            post.fishingMethods.add(new FishingMethod(chip.getLabel()));
         }
 
         selectedChipList = mSpeciesChipsInput.getSelectedChipList();
 
         for (ChipInterface chip: selectedChipList) {
 
-            if( mPost.species == null ) {
+            if( post.species == null ) {
 
-                mPost.species = new ArrayList<>();
+                post.species = new ArrayList<>();
             }
 
-            mPost.species.clear();
+            post.species.clear();
 
-            mPost.species.add(new Specie(chip.getLabel()));
+            post.species.add(new Specie(chip.getLabel()));
         }
 
-        if( mFishbookPost == null ) {
-
-            mFishbookPost = new FishbookPost(mPost);
-        }
-
-        mFishbookPost.savePost();
+        mFishbookPost.update(post);
 
         onBackPressed();
+    }
+
+    @Override
+    public void onChange(Post newData) {
+
+        if( newData == null ) {
+
+            newData = new Post();
+        }
+
+        setImageListToRecyclerViews(newData.images);
+
+        mDescription.setText(newData.description);
+
+        if( newData.species != null ) {
+
+            for (Specie specie : newData.species) {
+
+                mSpeciesChipsInput.addChip(new Chip(specie.name, null));
+            }
+        }
+
+        if( newData.fishingRegions != null ) {
+
+            for (FishingRegion region : newData.fishingRegions) {
+
+                mFishingRegionChipsInput.addChip(new Chip(region.name, null));
+            }
+        }
+
+        if( newData.fishingMethods != null ) {
+
+            for (FishingMethod method : newData.fishingMethods) {
+
+                mFishingMethodChipsInput.addChip(new Chip(method.name, null));
+            }
+        }
     }
 }

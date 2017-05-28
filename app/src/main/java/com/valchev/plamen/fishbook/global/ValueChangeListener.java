@@ -1,4 +1,4 @@
-package com.valchev.plamen.fishbook.chat;
+package com.valchev.plamen.fishbook.global;
 
 /**
  * Created by admin on 21.5.2017 г..

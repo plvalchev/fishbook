@@ -2,9 +2,11 @@ package com.valchev.plamen.fishbook.home;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 
+import com.google.firebase.database.Query;
 import com.stfalcon.frescoimageviewer.ImageViewer;
+import com.valchev.plamen.fishbook.global.FishbookImagesEventListener;
+import com.valchev.plamen.fishbook.global.ValueChangeListener;
 import com.valchev.plamen.fishbook.models.Image;
 
 import java.util.ArrayList;
@@ -21,8 +23,33 @@ public class FishbookActivity extends AppCompatActivity {
     protected ArrayList<Image> mImages;
     protected int mCurrentPosition = -1;
     protected ImageOverlayView mImageOverlayView;
+    protected FishbookImagesEventListener fishbookImagesEventListener;
+
+    public void showImages(Query query) {
+
+        if( fishbookImagesEventListener != null ) {
+
+            fishbookImagesEventListener.cleanUp();
+        }
+
+        fishbookImagesEventListener = new FishbookImagesEventListener(query, new ValueChangeListener<ArrayList<Image>>() {
+
+            @Override
+            public void onChange(ArrayList<Image> newData) {
+
+                if( newData != null && newData.size() > 0 ) {
+
+                    showImages(0, newData);
+                }
+            }
+        });
+    }
 
     public void showImages(int startPosition, ArrayList<Image> images) {
+
+        if( mCurrentPosition >= 0 ) {
+            return;
+        }
 
         mImageOverlayView = new ImageOverlayView(this);
         mImages = images;
@@ -58,8 +85,8 @@ public class FishbookActivity extends AppCompatActivity {
                     @Override
                     public String format(Image image) {
                         return image.highResUri;
-                    }
-                })
+    }
+})
                 .show();
     }
 

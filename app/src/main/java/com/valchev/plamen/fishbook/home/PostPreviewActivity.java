@@ -1,7 +1,6 @@
 package com.valchev.plamen.fishbook.home;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.widget.TextView;
@@ -15,13 +14,13 @@ import com.ms.square.android.expandabletextview.ExpandableTextView;
 import com.valchev.plamen.fishbook.R;
 import com.valchev.plamen.fishbook.global.FishbookPost;
 import com.valchev.plamen.fishbook.global.FishbookUser;
+import com.valchev.plamen.fishbook.global.ValueChangeListener;
 import com.valchev.plamen.fishbook.models.Image;
 import com.valchev.plamen.fishbook.models.Post;
 import com.valchev.plamen.fishbook.models.User;
+import com.valchev.plamen.fishbook.utils.FirebaseDatabaseUtils;
 
-import java.util.ArrayList;
-
-public class PostPreviewActivity extends FishbookActivity {
+public class PostPreviewActivity extends FishbookActivity implements ValueChangeListener<Post> {
 
     protected RecyclerView mRecyclerView;
     protected FishbookUser mFishbookUser;
@@ -49,60 +48,12 @@ public class PostPreviewActivity extends FishbookActivity {
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
+        String postKey = bundle.getString("key");
 
-        if( bundle != null ) {
+        bindPost(new Post());
+        bindUser(new User());
 
-            Post post = (Post) bundle.getSerializable("post");
-
-            bindPost(post);
-
-            mFishbookPost = new FishbookPost(post);
-
-            mFishbookPost.addPostValueEventListener(new FishbookPost.PostValueEventListener() {
-
-                @Override
-                public void onDataChange(Post post) {
-
-                    bindPost(post);
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-
-            User userData = (User) bundle.getSerializable("userData");
-
-            bindUser(userData);
-
-            FishbookUser currentUser = FishbookUser.getCurrentUser();
-
-            if( currentUser.getUid().compareToIgnoreCase(post.userID) == 0 ) {
-
-                mFishbookUser = currentUser;
-            }
-            else {
-
-                mFishbookUser = new FishbookUser(post.userID, userData);
-
-                mFishbookUser.reloadUserInBackground();
-            }
-
-            mFishbookUser.addUserValueEventListener(new FishbookUser.UserValueEventListener() {
-
-                @Override
-                public void onDataChange(User user) {
-
-                    bindUser(user);
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-        }
+        mFishbookPost = new FishbookPost(FirebaseDatabaseUtils.getPostDatabaseReference(postKey), this);
     }
 
     private void bindPost(Post post) {
@@ -122,9 +73,9 @@ public class PostPreviewActivity extends FishbookActivity {
 
             displayName = userData.getDisplayName();
 
-            if( userData.profilePictures != null && userData.profilePictures.size() > 0 ) {
+            if( userData.profilePicture != null ) {
 
-                profilePicture = userData.profilePictures.get(0);
+                profilePicture = userData.profilePicture;
             }
         }
 
@@ -137,5 +88,42 @@ public class PostPreviewActivity extends FishbookActivity {
                 .build();
 
         mProfilePicture.setController(controller);
+    }
+
+    @Override
+    public void onChange(Post newData) {
+
+        if( (mFishbookUser == null && newData != null && newData.userID != null) ||
+                mFishbookUser.getUid() != newData.userID ) {
+
+            FishbookUser currentUser = FishbookUser.getCurrentUser();
+
+            if( currentUser.getUid().compareToIgnoreCase(newData.userID) == 0 ) {
+
+                mFishbookUser = currentUser;
+            }
+            else {
+
+                mFishbookUser = new FishbookUser(newData.userID);
+
+                mFishbookUser.reloadUserInBackground();
+            }
+
+            mFishbookUser.addUserValueEventListener(new FishbookUser.UserValueEventListener() {
+
+                @Override
+                public void onDataChange(User user) {
+
+                    bindUser(user);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+
+        bindPost(newData);
     }
 }

@@ -1,0 +1,65 @@
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white">
+
+        <com.facebook.drawee.view.SimpleDraweeView
+            android:id="@+id/profile_picture"
+            android:layout_width="@dimen/dialog_avatar_width"
+            android:layout_height="@dimen/dialog_avatar_height"
+            android:layout_margin="16dp"
+            app:roundingBorderWidth="3dp"
+            app:roundingBorderColor="@android:color/white"
+            app:backgroundImage="@android:color/white"
+            app:placeholderImage="@mipmap/ic_person_black_48dp"/>
+
+        <TextView
+            android:id="@+id/description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="19dp"
+            android:layout_toEndOf="@id/profile_picture"
+            android:layout_toRightOf="@id/profile_picture"
+            android:layout_below="@id/post_date"
+            android:ellipsize="end"
+            android:fontFamily="@string/font_fontFamily_medium"
+            android:includeFontPadding="false" />
+
+        <TextView
+            android:id="@+id/post_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/profile_picture"
+            android:layout_marginEnd="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="16dp"
+            android:ellipsize="end"
+            android:maxLines="1"/>
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginTop="16dp"
+            android:paddingLeft="@dimen/dialog_divider_margin_left"
+            android:paddingStart="@dimen/dialog_divider_margin_left">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/dialog_divider"/>
+
+        </FrameLayout>
+
+    </RelativeLayout>
+
+</FrameLayout>

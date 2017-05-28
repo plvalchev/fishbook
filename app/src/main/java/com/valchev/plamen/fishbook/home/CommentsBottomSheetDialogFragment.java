@@ -1,6 +1,5 @@
 package com.valchev.plamen.fishbook.home;
 
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -18,9 +17,12 @@ import com.joanzapata.iconify.widget.IconButton;
 import com.joanzapata.iconify.widget.IconTextView;
 import com.valchev.plamen.fishbook.R;
 import com.valchev.plamen.fishbook.global.FishbookUser;
-import com.valchev.plamen.fishbook.global.FishbookUtils;
+import com.valchev.plamen.fishbook.models.Event;
+import com.valchev.plamen.fishbook.utils.FirebaseDatabaseUtils;
+import com.valchev.plamen.fishbook.utils.FishbookUtils;
 import com.valchev.plamen.fishbook.models.Comment;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -37,6 +39,7 @@ public class CommentsBottomSheetDialogFragment extends BottomSheetDialogFragment
     private DatabaseReference likesDatabaseReference;
     private IconButton writeCommentButton;
     private SocialPaneController socialPaneController;
+    private String ownerKey;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -58,7 +61,7 @@ public class CommentsBottomSheetDialogFragment extends BottomSheetDialogFragment
 
         socialPaneController = new SocialPaneController(null, null, null, likes, null, null);
 
-        socialPaneController.setDatabaseReferences(null, likesDatabaseReference);
+        socialPaneController.setDatabaseReferences(null, likesDatabaseReference, ownerKey);
 
         getDialog().setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
@@ -94,10 +97,13 @@ public class CommentsBottomSheetDialogFragment extends BottomSheetDialogFragment
         return view;
     }
 
-    public void setDatabaseReferences(DatabaseReference commentsDatabaseReference, DatabaseReference likesDatabaseReference) {
+    public void setDatabaseReferences(DatabaseReference commentsDatabaseReference,
+                                      DatabaseReference likesDatabaseReference,
+                                      String ownerKey) {
 
         this.commentsDatabaseReference = commentsDatabaseReference;
         this.likesDatabaseReference = likesDatabaseReference;
+        this.ownerKey = ownerKey;
     }
 
     @Override
@@ -116,9 +122,24 @@ public class CommentsBottomSheetDialogFragment extends BottomSheetDialogFragment
                 comment.dateTime = FishbookUtils.getCurrentDateTime();
             }
 
-            Map<String, Object> childUpdates = comment.toMap();
+            Event event = new Event();
 
-            commentsDatabaseReference.child(comment.id).updateChildren(childUpdates);
+            event.eventType = commentsDatabaseReference.getParent().getParent().getKey();
+            event.objectType = commentsDatabaseReference.getParent().getKey();
+            event.objectKey = commentsDatabaseReference.getKey();
+            event.userID = FishbookUser.getCurrentUser().getUid();
+            event.eventsCount = commentRecyclerViewAdapter.getItemCount() + 1;
+
+            DatabaseReference databaseReference = FirebaseDatabaseUtils.getDatabaseReference();
+            Map<String, Object> childUpdates = new HashMap<>();
+
+            String commentChild = event.eventType + "/" + event.objectType + "/" + event.objectKey + "/" + comment.id;
+            String eventChild = "user-events/" + ownerKey + "/" + event.eventType + "|" + event.objectType + "|" + event.objectKey;
+
+            childUpdates.put(commentChild, comment);
+            childUpdates.put(eventChild, event);
+
+            databaseReference.updateChildren(childUpdates);
 
             writeComment.setText(null);
 

@@ -1,28 +1,15 @@
 package com.valchev.plamen.fishbook.home;
 
-import android.net.Uri;
-import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ImageButton;
 
-import com.facebook.drawee.backends.pipeline.Fresco;
-import com.facebook.drawee.drawable.ScalingUtils;
-import com.facebook.drawee.generic.GenericDraweeHierarchy;
-import com.facebook.drawee.interfaces.DraweeController;
-import com.facebook.drawee.view.SimpleDraweeView;
-import com.facebook.imagepipeline.request.ImageRequest;
-import com.pchmn.materialchips.ChipsInput;
-import com.pchmn.materialchips.model.Chip;
 import com.valchev.plamen.fishbook.R;
 import com.valchev.plamen.fishbook.models.Image;
 
-import java.io.File;
 import java.util.ArrayList;
 
 /**

@@ -1,18 +1,13 @@
 package com.valchev.plamen.fishbook.chat;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.stfalcon.chatkit.commons.models.IMessage;
 import com.stfalcon.chatkit.commons.models.IUser;
 import com.valchev.plamen.fishbook.global.FishbookValueEventListener;
+import com.valchev.plamen.fishbook.global.ValueChangeListener;
 import com.valchev.plamen.fishbook.models.Message;
 import com.valchev.plamen.fishbook.models.User;
 
-import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -60,7 +55,7 @@ public class ChatMessage extends FishbookValueEventListener<Message> implements 
 
         if( getValue() != null ) {
 
-            createdAt = new Date(-getValue().getInvertedDateTime());
+            createdAt = new Date(-getValue().invertedDateTime);
         }
 
         return createdAt;
